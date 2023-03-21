@@ -131,6 +131,20 @@ void MISC_timeoutTimerIncTick(void);
  */
 uint32_t MISC_timeoutGetTick(void);
 
+//---------------------------------------------------------------------------
+// The section of NVIC
+//---------------------------------------------------------------------------
+
+/**
+  * @brief  This function sets the priority grouping field (preemption priority and subpriority)
+  *         using the required unlock sequence.
+  * @param  priorityGroup - The priority grouping bits length.
+  * @note   When the NVIC_PriorityGroup_0 is selected, IRQ preemption is no more possible.
+  *         The pending IRQ priority will be managed only by the subpriority.
+  * @retval None.
+  */
+void MISC_NVIC_setPriorityGrouping(USH_NVIC_priorityGroup priorityGroup);
+
 /**
   * @brief  This function sets the priority of an interrupt.
   * @param  IRQn External interrupt number.
