@@ -1,0 +1,3 @@
+[submodule "Experimentals-with-CAN-and-LIN/Drivers/STM32F4xx_customLibrary"]
+	path = Experimentals-with-CAN-and-LIN/Drivers/STM32F4xx_customLibrary
+	url = git@github.com:UladShumeika/STM32F4xx_customLibrary.git
