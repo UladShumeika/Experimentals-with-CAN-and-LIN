@@ -109,6 +109,10 @@ typedef enum
 // External function prototypes
 //---------------------------------------------------------------------------
 
+//---------------------------------------------------------------------------
+// The section of timeout timer
+//---------------------------------------------------------------------------
+
 /**
  * @brief 	This function sets up TIM14 timer to check for timeout.
  * @retval	None.
@@ -161,6 +165,10 @@ void MISC_NVIC_EnableIRQ(IRQn_Type IRQn);
   * @retval None.
   */
 void MISC_NVIC_DisableIRQ(IRQn_Type IRQn);
+
+//---------------------------------------------------------------------------
+// The section of FLASH memory
+//---------------------------------------------------------------------------
 
 /**
   * @brief  This function enables or disables the prefetch buffer.
