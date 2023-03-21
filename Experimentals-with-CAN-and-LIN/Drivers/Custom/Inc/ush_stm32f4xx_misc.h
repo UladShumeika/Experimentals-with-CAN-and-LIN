@@ -2,9 +2,14 @@
   ******************************************************************************
   * @file    ush_stm32f4xx_misc.h
   * @author  Ulad Shumeika
-  * @version v1.0
+  * @version v1.1
   * @date    27-February-2023
   * @brief   Header file of miscellaneous module.
+  *
+  *
+  *
+  *	@Major changes v1.1
+  *		- added the ability to configure a preemption priority group
   *
   ******************************************************************************
   */
