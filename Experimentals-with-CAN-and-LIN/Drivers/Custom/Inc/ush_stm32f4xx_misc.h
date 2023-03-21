@@ -76,6 +76,12 @@ typedef enum
 //---------------------------------------------------------------------------
 // Macros
 //---------------------------------------------------------------------------
+#define IS_MISC_NVIC_PRIORITY_GROUP(GROUP) 			   (((GROUP) == NVIC_PRIORITYGROUP_0) || \
+                                       	   	   	 	 	((GROUP) == NVIC_PRIORITYGROUP_1) || \
+												 	 	((GROUP) == NVIC_PRIORITYGROUP_2) || \
+												 	 	((GROUP) == NVIC_PRIORITYGROUP_3) || \
+												 	 	((GROUP) == NVIC_PRIORITYGROUP_4))
+
 #define IS_MISC_NVIC_PREEMPTION_PRIORITY(PRIORITY)  	((PRIORITY) < 16U)
 
 #define IS_MISC_NVIC_SUB_PRIORITY(PRIORITY)  			((PRIORITY) < 16U)
