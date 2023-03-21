@@ -169,5 +169,5 @@ static void initMicrocontroller(void)
 	MISC_FLASH_dataCacheCmd(ENABLE);
 
 	// Set NVIC Group Priority to 4
-	//NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+	MISC_NVIC_setPriorityGrouping(NVIC_PRIORITYGROUP_4);
 }
