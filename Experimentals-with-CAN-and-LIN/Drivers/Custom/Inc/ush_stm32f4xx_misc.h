@@ -136,6 +136,20 @@ typedef enum
 //---------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------
+// The section of power controller
+//---------------------------------------------------------------------------
+
+/**
+ * @brief 	This function configures the main internal regulator output voltage.
+ * @param 	voltageScaling - specifies the regulator output voltage to achieve
+ * 							 a tradeoff between performance and power consumption
+ * 							 when the device does not operate at the maximum frequency
+ * 							 (refer to the datasheets for more details).
+ * @retval 	None.
+ */
+void MISC_PWR_mainRegulatorModeConfig(USH_PWR_voltageScaling voltageScaling);
+
+//---------------------------------------------------------------------------
 // The section of timeout timer
 //---------------------------------------------------------------------------
 
