@@ -36,6 +36,18 @@ typedef enum
 	RCC_HSE_BYPASS		= ((uint32_t)(RCC_CR_HSEON | RCC_CR_HSEBYP))	/* HSE clock bypass */
 } USH_HSE_states;
 
+/**
+ * @brief RCC flags enumeration
+ */
+typedef enum
+{
+	RCC_FLAG_HSIRDY			= RCC_CR_HSIRDY,		/* HSI clock ready flag */
+	RCC_FLAG_HSERDY			= RCC_CR_HSERDY,		/* HSE clock ready flag */
+	RCC_FLAG_PLLRDY			= RCC_CR_PLLRDY,		/* PLL clock ready flag */
+	RCC_FLAG_PLLI2SRDY		= RCC_CR_PLLI2SRDY,		/* PLLI2S clock ready flag */
+	RCC_FLAG_PLLSAIRDY		= RCC_CR_PLLSAIRDY		/* PLLSAI clock ready flag */
+} USH_RCC_flags;
+
 //---------------------------------------------------------------------------
 // Enable peripheral clocking
 //---------------------------------------------------------------------------
