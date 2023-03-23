@@ -46,7 +46,16 @@ typedef enum
 	RCC_HSE_OFF			= 0x00U,										/* HSE clock disabled */
 	RCC_HSE_ON			= RCC_CR_HSEON,									/* HSE clock enabled */
 	RCC_HSE_BYPASS		= ((uint32_t)(RCC_CR_HSEON | RCC_CR_HSEBYP))	/* HSE clock bypass */
-} USH_HSE_states;
+} USH_RCC_HSE_states;
+
+/**
+ * @brief RCC PLL source enumeration.
+ */
+typedef enum
+{
+	RCC_PLLSOURCE_HSI	= RCC_PLLCFGR_PLLSRC_HSI,	/* HSI oscillator clock selected as PLL and PLLI2S clock entry */
+	RCC_PLLSOURCE_HSE	= RCC_PLLCFGR_PLLSRC_HSE	/* HSE oscillator clock selected as PLL and PLLI2S clock entry */
+} USH_RCC_PLLSource;
 
 /**
  * @brief RCC flags enumeration
