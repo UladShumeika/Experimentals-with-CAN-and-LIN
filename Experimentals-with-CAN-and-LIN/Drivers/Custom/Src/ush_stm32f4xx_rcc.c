@@ -21,12 +21,31 @@
 //---------------------------------------------------------------------------
 
 /**
- * @brief 	This function returns HSI status.
- * @retval	HSI status.
+ * @brief 	This function returns flags status.
+ * @param	flags - DMA flags. This parameter can be a value of @ref USH_DMA_flags.
+ * @retval	Flags status.
  */
-uint8_t getStatusHSI(void)
+FlagStatus RCC_getFlagStatus(USH_RCC_flags flags)
 {
-	return (uint8_t)(RCC->CR & RCC_CR_HSIRDY);
+	uint32_t statusReg = 0;
+	FlagStatus status = RESET;
+
+	// Check parameters
+	assert_param(IS_RCC_FLAGS(flags));
+
+	// Read RCC->CR register
+	statusReg = RCC->CR;
+
+	// Set flags status
+	if(statusReg & flags)
+	{
+		status = SET;
+	} else
+	{
+		status = RESET;
+	}
+
+	return status;
 }
 
 
