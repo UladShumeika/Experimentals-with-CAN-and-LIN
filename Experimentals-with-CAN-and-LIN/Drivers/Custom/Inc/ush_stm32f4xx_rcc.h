@@ -31,9 +31,9 @@
  */
 typedef enum
 {
-	RCC_HSE_OFF			= 0x00U,
-	RCC_HSE_ON			= RCC_CR_HSEON,
-	RCC_HSE_BYPASS		= ((uint32_t)(RCC_CR_HSEON | RCC_CR_HSEBYP))
+	RCC_HSE_OFF			= 0x00U,										/* HSE clock disabled */
+	RCC_HSE_ON			= RCC_CR_HSEON,									/* HSE clock enabled */
+	RCC_HSE_BYPASS		= ((uint32_t)(RCC_CR_HSEON | RCC_CR_HSEBYP))	/* HSE clock bypass */
 } USH_HSE_states;
 
 //---------------------------------------------------------------------------
