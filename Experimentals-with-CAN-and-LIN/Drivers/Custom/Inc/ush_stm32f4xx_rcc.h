@@ -55,7 +55,17 @@ typedef enum
 {
 	RCC_PLLSOURCE_HSI	= RCC_PLLCFGR_PLLSRC_HSI,	/* HSI oscillator clock selected as PLL and PLLI2S clock entry */
 	RCC_PLLSOURCE_HSE	= RCC_PLLCFGR_PLLSRC_HSE	/* HSE oscillator clock selected as PLL and PLLI2S clock entry */
-} USH_RCC_PLLSource;
+} USH_RCC_PLL_source;
+
+/**
+ * @brief RCC PLL states enumeration.
+ */
+typedef enum
+{
+	RCC_PLL_NONE	= 0x00,		/* PLL is not used */
+	RCC_PLL_ON		= 0x01,		/* PLL enabled */
+	RCC_PLL_OFF		= 0x02		/* PLL disabled */
+} USH_RCC_PLL_states;
 
 /**
  * @brief RCC flags enumeration
