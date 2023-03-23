@@ -29,8 +29,9 @@
  */
 typedef enum
 {
-	STATUS_TIMEOUT		= 0,				/* Periphery status timeout */
-	STATUS_OK	 		= !STATUS_TIMEOUT	/* Periphery status ok */
+	STATUS_TIMEOUT	= 0,	/* Periphery status timeout */
+	STATUS_ERROR,			/* Periphery status error */
+	STATUS_OK				/* Periphery status OK */
 } USH_peripheryStatus;
 
 //---------------------------------------------------------------------------
