@@ -97,12 +97,12 @@ void MISC_timeoutTimerInit(void)
 	TIM14->ARR = (uint32_t)((500U) - 1U);
 
 	// Set the Prescaler value
-	if(getStatusHSI())
-	{
-		TIM14->PSC = 180 - 1;		// HSE enabled and system clock is 180 MHz
-	} else
+	if(RCC_getFlagStatus(RCC_FLAG_HSIRDY))
 	{
 		TIM14->PSC = 16 - 1;		// HSI enabled. 16 MHz
+	} else
+	{
+		TIM14->PSC = 180 - 1;		// HSE enabled and system clock is 180 MHz
 	}
 
 	TIM14->EGR = TIM_EGR_UG;
