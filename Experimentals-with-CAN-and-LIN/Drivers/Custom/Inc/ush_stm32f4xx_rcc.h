@@ -68,7 +68,7 @@ typedef enum
 /**
  * @brief Power interface clock enable
  */
-#define RCC_powerInterfaceClockEnable()				RCC->APB1ENR |= RCC_APB1ENR_PWREN
+#define RCC_powerInterfaceClockEnable()		RCC->APB1ENR |= RCC_APB1ENR_PWREN
 
 /**
  * @brief TIM14 clock enable
@@ -80,9 +80,10 @@ typedef enum
 //---------------------------------------------------------------------------
 
 /**
- * @brief 	This function returns HSI status.
- * @retval	HSI status.
+ * @brief 	This function returns flags status.
+ * @param	flags - DMA flags. This parameter can be a value of @ref USH_DMA_flags.
+ * @retval	Flags status.
  */
-uint8_t getStatusHSI(void);
+FlagStatus RCC_getFlagStatus(USH_RCC_flags flags);
 
 #endif /* __USH_STM32F4XX_MISC_H */
