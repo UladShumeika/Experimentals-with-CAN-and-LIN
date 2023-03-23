@@ -29,6 +29,21 @@
 /**
  * @brief Power interface clock enable
  */
-#define RCC_powerInterfaceClockEnable()				RCC->APB2ENR |= RCC_APB1ENR_PWREN
+#define RCC_powerInterfaceClockEnable()				RCC->APB1ENR |= RCC_APB1ENR_PWREN
+
+/**
+ * @brief TIM14 clock enable
+ */
+#define RCC_TIM14_ClockEnable()				RCC->APB1ENR |= RCC_APB1ENR_TIM14EN
+
+//---------------------------------------------------------------------------
+// External function prototypes
+//---------------------------------------------------------------------------
+
+/**
+ * @brief 	This function returns HSI status.
+ * @retval	HSI status.
+ */
+uint8_t getStatusHSI(void);
 
 #endif /* __USH_STM32F4XX_MISC_H */
