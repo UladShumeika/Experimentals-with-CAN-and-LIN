@@ -49,6 +49,16 @@ typedef enum
 } USH_RCC_HSE_states;
 
 /**
+ * @brief RCC PLL states enumeration.
+ */
+typedef enum
+{
+	RCC_PLL_NONE	= 0x00,		/* PLL is not used */
+	RCC_PLL_ON		= 0x01,		/* PLL enabled */
+	RCC_PLL_OFF		= 0x02		/* PLL disabled */
+} USH_RCC_PLL_states;
+
+/**
  * @brief RCC PLL source enumeration.
  */
 typedef enum
