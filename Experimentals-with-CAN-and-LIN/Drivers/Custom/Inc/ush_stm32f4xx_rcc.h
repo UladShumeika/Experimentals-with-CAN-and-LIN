@@ -49,6 +49,19 @@ typedef enum
 } USH_RCC_flags;
 
 //---------------------------------------------------------------------------
+// Macros
+//---------------------------------------------------------------------------
+#define IS_RCC_HSE_STATE(STATE)			           (((STATE) == RCC_HSE_OFF)	|| \
+													((STATE) == RCC_HSE_ON)	  	|| \
+													((STATE) == RCC_HSE_BYPASS))
+
+#define IS_RCC_FLAGS(FLAG)						   (((FLAG) == RCC_FLAG_HSIRDY)		|| \
+													((FLAG) == RCC_FLAG_HSERDY) 	|| \
+													((FLAG) == RCC_FLAG_PLLRDY) 	|| \
+													((FLAG) == RCC_FLAG_PLLI2SRDY) 	|| \
+													((FLAG) == RCC_FLAG_PLLSAIRDY))
+
+//---------------------------------------------------------------------------
 // Enable peripheral clocking
 //---------------------------------------------------------------------------
 
