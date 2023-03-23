@@ -15,3 +15,28 @@
 // Includes
 //---------------------------------------------------------------------------
 #include "ush_stm32f4xx_rcc.h"
+
+//---------------------------------------------------------------------------
+// Library Functions
+//---------------------------------------------------------------------------
+
+/**
+ * @brief 	This function returns HSI status.
+ * @retval	HSI status.
+ */
+uint8_t getStatusHSI(void)
+{
+	return (uint8_t)(RCC->CR & RCC_CR_HSIRDY);
+}
+
+
+
+
+/**
+ * @brief
+ *
+ */
+void RCC_HSEConfig(RCC_HSE)
+{
+
+}
