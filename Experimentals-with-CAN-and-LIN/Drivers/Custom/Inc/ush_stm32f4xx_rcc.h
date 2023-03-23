@@ -23,6 +23,20 @@
 #include "stm32f4xx.h"
 
 //---------------------------------------------------------------------------
+// Structures and enumerations
+//---------------------------------------------------------------------------
+
+/**
+ * @brief HSE states enumeration
+ */
+typedef enum
+{
+	RCC_HSE_OFF			= 0x00U,
+	RCC_HSE_ON			= RCC_CR_HSEON,
+	RCC_HSE_BYPASS		= ((uint32_t)(RCC_CR_HSEON | RCC_CR_HSEBYP))
+} USH_HSE_states;
+
+//---------------------------------------------------------------------------
 // Enable peripheral clocking
 //---------------------------------------------------------------------------
 
