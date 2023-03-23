@@ -76,13 +76,16 @@ void MISC_PWR_mainRegulatorModeConfig(USH_PWR_voltageScaling voltageScaling)
 //---------------------------------------------------------------------------
 
 /**
- * @brief 	This function sets up TIM14 timer to check for timeout.
+ * @brief 	This function initializes TIM14 timer to check for timeout.
  * @retval	None.
  */
-void MISC_timeoutTimer(void)
+void MISC_timeoutTimerInit(void)
 {
 	// Enable TIM14 clock
-	RCC->APB1ENR |= RCC_APB1ENR_TIM14EN;
+	RCC_TIM14_ClockEnable();
+
+	// Disable TIM14
+	TIM14->CR1 &= ~TIM_CR1_CEN;
 
 	// Set the clock division
 	TIM14->CR1 &= ~TIM_CR1_CKD;
@@ -94,7 +97,13 @@ void MISC_timeoutTimer(void)
 	TIM14->ARR = (uint32_t)((500U) - 1U);
 
 	// Set the Prescaler value
-	TIM14->PSC = 180 - 1;
+	if(getStatusHSI())
+	{
+		TIM14->PSC = 180 - 1;		// HSE enabled and system clock is 180 MHz
+	} else
+	{
+		TIM14->PSC = 16 - 1;		// HSI enabled. 16 MHz
+	}
 
 	TIM14->EGR = TIM_EGR_UG;
 
