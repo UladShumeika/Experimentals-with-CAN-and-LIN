@@ -9,7 +9,8 @@
   *
   *
   *	@Major changes v1.1
-  *		- added the ability to configure a preemption priority group
+  *		- added the ability to configure a preemption priority group;
+  *		- added PWR section
   *
   ******************************************************************************
   */
