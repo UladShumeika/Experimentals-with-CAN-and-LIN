@@ -27,6 +27,18 @@
 //---------------------------------------------------------------------------
 
 /**
+ * @brief Oscillator types enumeration.
+ */
+typedef enum
+{
+	RCC_OSCILLATORTYPE_NONE		= 0x00UL,	/* No oscillator will be configured */
+	RCC_OSCILLATORTYPE_HSE		= 0x01UL,	/* HSE oscillator will be configured */
+	RCC_OSCILLATORTYPE_HSI		= 0x02UL,	/* HSI oscillator will be configured */
+	RCC_OSCILLATORTYPE_LSE		= 0x04UL,	/* LSE oscillator will be configured */
+	RCC_OSCILLATORTYPE_LSI		= 0x08UL	/* LSI oscillator will be configured */
+} USH_RCC_oscillatorTypes;
+
+/**
  * @brief HSE states enumeration
  */
 typedef enum
