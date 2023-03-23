@@ -68,14 +68,37 @@ typedef enum
 } USH_RCC_PLL_source;
 
 /**
- * @brief RCC PLL states enumeration.
+ * @brief RCC PLL settings structure definition.
  */
-typedef enum
+typedef struct
 {
-	RCC_PLL_NONE	= 0x00,		/* PLL is not used */
-	RCC_PLL_ON		= 0x01,		/* PLL enabled */
-	RCC_PLL_OFF		= 0x02		/* PLL disabled */
-} USH_RCC_PLL_states;
+	USH_RCC_PLL_states PLL_state;		/* PLL states. This parameter can be a value of @ref USH_RCC_PLL_states. */
+
+	USH_RCC_PLL_source PLL_source;		/* PLL source. This parameter can be a value of @ref USH_RCC_PLL_source. */
+
+	uint32_t PLLM;						/* Division factor for the main PLL (PLL) and audio PLL (PLLI2S) input clock. */
+
+	uint32_t PLLN;						/* Main PLL (PLL) multiplication factor for VCO. */
+
+	uint32_t PLLP;						/* Main PLL (PLL) division factor for main system clock. */
+
+	uint32_t PLLQ;						/* Main PLL (PLL) division factor for USB OTG FS, SDIO and random number generator clocks. */
+
+} USH_RCC_PLL_settingsTypeDef;
+
+/**
+ * @brief RCC oscillator initialization structure definition.
+ */
+typedef struct
+{
+	USH_RCC_oscillatorTypes OscillatorTypes;	/* The oscillators to be configured.
+	 	 	 	 	 	 	 	 	 	 	 	   This parameter can be a value of @ref USH_RCC_oscillatorTypes. */
+
+	USH_RCC_HSE_states HSE_state;				/* HSE state. This parameter can be a value of @ref USH_HSE_states. */
+
+	USH_RCC_PLL_settingsTypeDef PLL;			/* PLL settings structure. */
+
+} USH_RCC_oscInitTypeDef;
 
 /**
  * @brief RCC flags enumeration
