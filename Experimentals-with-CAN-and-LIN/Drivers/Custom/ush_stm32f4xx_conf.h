@@ -2,9 +2,13 @@
   ******************************************************************************
   * @file    ush_stm32f4xx_conf.h
   * @author  Ulad Shumeika
-  * @version v1.0
+  * @version v1.1
   * @date    03-March-2023
   * @brief   Library configuration file.
+  *
+  *
+  *	@Major changes v1.1
+  *		- added STATUS_ERROR in USH_peripheryStatus enumeration;
   *
   ******************************************************************************
   */
