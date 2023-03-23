@@ -41,6 +41,37 @@ int _write(int file, char *ptr, int len)
 }
 
 //---------------------------------------------------------------------------
+// The section of power controller
+//---------------------------------------------------------------------------
+
+/**
+ * @brief 	This function configures the main internal regulator output voltage.
+ * @param 	voltageScaling - specifies the regulator output voltage to achieve
+ * 							 a tradeoff between performance and power consumption
+ * 							 when the device does not operate at the maximum frequency
+ * 							 (refer to the datasheets for more details).
+ * @retval 	None.
+ */
+void MISC_PWR_mainRegulatorModeConfig(USH_PWR_voltageScaling voltageScaling)
+{
+	uint32_t tempReg = 0;
+
+	// Check parameters
+	assert_param(IS_MISC_PWR_VOLTAGE_SCALING(voltageScaling));
+
+	// Enable power interface clock
+	RCC_powerInterfaceClockEnable();
+
+	// Read PWR_CR register and clear PWR_CR_VOS bits
+	tempReg = PWR->CR;
+	tempReg &= ~PWR_CR_VOS;
+
+	// Set voltageScaling and write to PWR_CR register
+	tempReg |= voltageScaling;
+	PWR->CR = tempReg;
+}
+
+//---------------------------------------------------------------------------
 // The section of timeout timer
 //---------------------------------------------------------------------------
 
