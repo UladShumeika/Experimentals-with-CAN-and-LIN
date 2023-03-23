@@ -41,6 +41,7 @@ typedef enum
 //#include "ush_stm32f4xx_dma.h"
 //#include "ush_stm32f4xx_spi.h"
 #include "ush_stm32f4xx_uart.h"
+#include "ush_stm32f4xx_rcc.h"
 
 //---------------------------------------------------------------------------
 // Function's parameters check.
