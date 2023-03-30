@@ -162,6 +162,13 @@ typedef enum
  */
 void MISC_PWR_mainRegulatorModeConfig(USH_PWR_voltageScaling voltageScaling);
 
+/**
+ * @brief 	This function returns flag status.
+ * @param	flags - PWR flags. This parameter can be a value of @ref USH_DMA_flags.
+ * @retval	Flags status.
+ */
+FlagStatus MISC_PWR_getFlagStatus(USH_PWR_flags flags);
+
 //---------------------------------------------------------------------------
 // The section of timeout timer
 //---------------------------------------------------------------------------
