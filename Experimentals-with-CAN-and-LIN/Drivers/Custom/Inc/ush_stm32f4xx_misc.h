@@ -53,6 +53,15 @@ typedef enum
 } USH_PWR_voltageScaling;
 
 /**
+ * @brief PWR flags enumeration
+ */
+typedef enum
+{
+	PWR_FLAG_ODSWRDY 	= PWR_CSR_ODSWRDY,		/* Over-drive mode switching ready flag */
+	PWR_FLAG_ODRDY   	= PWR_CSR_ODRDY			/* Over-drive mode ready flag */
+} USH_PWR_flags;
+
+/**
  * @brief Preemption priority group enumeration
  */
 typedef enum
