@@ -29,8 +29,8 @@
 // Static function prototypes
 //---------------------------------------------------------------------------
 static void initMicrocontroller(void);
-static ErrorStatus initSysTick(uint32_t tickPriority);
-static ErrorStatus initSystemClock(void);
+static USH_peripheryStatus initSysTick(uint32_t tickPriority);
+static USH_peripheryStatus initSystemClock(void);
 
 //---------------------------------------------------------------------------
 // Main function
@@ -69,7 +69,7 @@ int main(void)
   * @brief This function is used to initialize system clock
   * @retval ErrorStatus Status
   */
-static ErrorStatus initSystemClock(void)
+static USH_peripheryStatus initSystemClock(void)
 {
 //	// Configure the main internal regulator output voltage
 //	RCC_APB1PeriphClockCmd(RCC_APB1ENR_PWREN, ENABLE);
@@ -131,12 +131,12 @@ static ErrorStatus initSystemClock(void)
   * @param 	tickPriority Tick interrupt priority
   * @retval	ErrorStatus Status
   */
-static ErrorStatus initSysTick(uint32_t tickPriority)
+static USH_peripheryStatus initSysTick(uint32_t tickPriority)
 {
 	// Configure the SysTick to have interrupt in 1ms time basis
 	if(SysTick_Config(SystemCoreClock / SYS_TICK_1MS) > 0U)
 	{
-		return ERROR;
+		return STATUS_ERROR;
 	}
 
 	// Configure the SysTick IRQ priority
@@ -145,10 +145,10 @@ static ErrorStatus initSysTick(uint32_t tickPriority)
 		NVIC_SetPriority(SysTick_IRQn, tickPriority);
 	} else
 		{
-			return ERROR;
+			return STATUS_ERROR;
 		}
 
-	return SUCCESS;
+	return STATUS_OK;
 }
 
 /**
