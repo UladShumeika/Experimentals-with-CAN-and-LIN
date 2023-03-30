@@ -44,19 +44,50 @@ USH_peripheryStatus RCC_oscInit(USH_RCC_oscInitTypeDef *oscInitStructure)
 
 	// Check parameters
 	if(oscInitStructure == 0) return STATUS_ERROR;
-
+	assert_param(IS_RCC_OSCTYPES(oscInitStructure->OscillatorTypes));
+	assert_param(IS_RCC_PLL_STATE(oscInitStructure->PLL.PLL_state));
 
 	/*------------------------------- HSE Configuration ------------------------*/
 	if(((oscInitStructure->OscillatorTypes) & RCC_OSCILLATORTYPE_HSE) == RCC_OSCILLATORTYPE_HSE)
 	{
-		RCC->CR |= oscInitStructure->HSE_state;
+		// Check parameters
+		assert_param(IS_RCC_HSE_STATE(oscInitStructure->HSE_state));
 
-		startTicks = MISC_timeoutGetTick();
-		while(RCC_getFlagStatus(RCC_FLAG_HSERDY) == RESET)
+		if(oscInitStructure->HSE_state != RCC_HSE_OFF)
 		{
-			if((MISC_timeoutGetTick() - startTicks) > HSE_STARTUP_TIMEOUT)
+			if(oscInitStructure->HSE_state == RCC_HSE_BYPASS)
 			{
-				return STATUS_TIMEOUT;
+				// In order to set bypass, HSE must be turned off
+				if(RCC_getFlagStatus(RCC_FLAG_HSERDY) != RESET)
+				{
+					// Disable HSE
+					RCC->CR &= ~RCC_CR_HSEON;
+
+					// Wait till HSE is disabled
+					if(!RCC_waitFlag(RCC_FLAG_HSERDY, HSE_STARTUP_TIMEOUT, RESET))
+					{
+						return STATUS_TIMEOUT;
+					}
+				}
+
+				// Enable HSE bypass
+				RCC->CR |= (RCC_CR_HSEON | RCC_CR_HSEBYP);
+
+				// Wait till HSE is enabled
+				if(!RCC_waitFlag(RCC_FLAG_HSERDY, HSE_STARTUP_TIMEOUT, SET))
+				{
+					return STATUS_TIMEOUT;
+				}
+			} else
+			{
+				// Enable HSE clock
+				RCC->CR |= RCC_CR_HSEON;
+
+				// Wait till HSE is enabled
+				if(!RCC_waitFlag(RCC_FLAG_HSERDY, HSE_STARTUP_TIMEOUT, SET))
+				{
+					return STATUS_TIMEOUT;
+				}
 			}
 		}
 	}
