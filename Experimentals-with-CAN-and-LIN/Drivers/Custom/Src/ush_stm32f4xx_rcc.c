@@ -108,7 +108,41 @@ USH_peripheryStatus RCC_oscInit(USH_RCC_oscInitTypeDef *oscInitStructure)
 
 	if(oscInitStructure->PLL.PLL_state != RCC_PLL_NONE)
 	{
+		// check parameters
+		assert_param(IS_RCC_PLL_SOURCE(oscInitStructure->PLL.PLL_source));
+		assert_param(IS_RCC_PLLM_VALUE(oscInitStructure->PLL.PLLM));
+		assert_param(IS_RCC_PLLN_VALUE(oscInitStructure->PLL.PLLN));
+		assert_param(IS_RCC_PLLP_VALUE(oscInitStructure->PLL.PLLP));
+		assert_param(IS_RCC_PLLQ_VALUE(oscInitStructure->PLL.PLLQ));
 
+		if(RCC_GET_SYSCLOCK_SOURCE() != RCC_CFGR_SWS_PLL)
+		{
+			// Disable Main PLL
+			RCC->CR &= ~RCC_CR_PLLON;
+
+			// Wait till PLL is disabled
+			if(!RCC_waitFlag(RCC_FLAG_PLLRDY, PLL_TIMEOUT, RESET)) return STATUS_TIMEOUT;
+
+			// Configure PLL
+			RCC->CFGR = (oscInitStructure->PLL.PLL_source 										| \
+					     oscInitStructure->PLL.PLLM		  										| \
+						 (oscInitStructure->PLL.PLLN << RCC_PLLCFGR_PLLN_Pos)					| \
+						 (((oscInitStructure->PLL.PLLP >> 1U) - 1U)	<< RCC_PLLCFGR_PLLP_Pos)	| \
+						 oscInitStructure->PLL.PLLQ << RCC_PLLCFGR_PLLQ_Pos);
+
+			// Enable Main PLL
+			RCC->CR |= RCC_CR_PLLON;
+
+			// Wait till PLL is enabled
+			startTicks = MISC_timeoutGetTick();
+			while(RCC_getFlagStatus(RCC_FLAG_PLLRDY) == RESET)
+			{
+				if((MISC_timeoutGetTick() - startTicks) > PLL_TIMEOUT)
+				{
+					return STATUS_TIMEOUT;
+				}
+			}
+		}
 	}
 
 	return STATUS_OK;
