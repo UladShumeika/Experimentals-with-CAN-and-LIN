@@ -40,6 +40,7 @@ typedef enum
 
 /**
  * @brief HSE states enumeration
+ * @note  Not used in this version, added for future features.
  */
 typedef enum
 {
@@ -50,6 +51,7 @@ typedef enum
 
 /**
  * @brief RCC PLL states enumeration.
+ * @note  Not used in this version, added for future features.
  */
 typedef enum
 {
@@ -113,7 +115,7 @@ typedef enum
 } USH_RCC_flags;
 
 //---------------------------------------------------------------------------
-// Macros
+// Test macros
 //---------------------------------------------------------------------------
 #define IS_RCC_HSE_STATE(STATE)			           (((STATE) == RCC_HSE_OFF)	|| \
 													((STATE) == RCC_HSE_ON)	  	|| \
@@ -159,7 +161,7 @@ typedef enum
 #define RCC_GET_SYSCLOCK_SOURCE()				   (RCC->CFGR & RCC_CFGR_SWS)
 
 //---------------------------------------------------------------------------
-// Enable peripheral clocking
+// Enable or disable peripheral clocking
 //---------------------------------------------------------------------------
 
 /**
