@@ -19,7 +19,13 @@
 //---------------------------------------------------------------------------
 // Defines
 //---------------------------------------------------------------------------
-#define HSE_STARTUP_TIMEOUT					(100U)
+#define HSE_STARTUP_TIMEOUT					(100U)	// 100 ms
+#define PLL_TIMEOUT							(2U)	// 2 ms
+
+//---------------------------------------------------------------------------
+// Static function prototypes
+//---------------------------------------------------------------------------
+static USH_peripheryStatus RCC_waitFlag(USH_RCC_flags flag, uint8_t timeout, FlagStatus expectedState);
 
 //---------------------------------------------------------------------------
 // Initialization functions
@@ -107,4 +113,46 @@ FlagStatus RCC_getFlagStatus(USH_RCC_flags flags)
 	}
 
 	return status;
+}
+
+//---------------------------------------------------------------------------
+// Static Functions
+//---------------------------------------------------------------------------
+
+/**
+ * @brief 	This function waits for a flag to be reset or set.
+ * @param 	flag - A flag to watch.
+ * @param 	timeout - timeout time for the specified flag.
+ * @retval	Periphery status.
+ */
+static USH_peripheryStatus RCC_waitFlag(USH_RCC_flags flag, uint8_t timeout, FlagStatus expectedState)
+{
+	uint8_t startTicks = MISC_timeoutGetTick();
+
+	// Check parameters
+	assert_param(IS_RCC_FLAGS(flag));
+
+	if(expectedState == RESET)
+	{
+		// Wait till the flag is disabled
+		while(RCC_getFlagStatus(flag) != RESET)
+		{
+			if((MISC_timeoutGetTick() - startTicks) > timeout)
+			{
+				return STATUS_TIMEOUT;
+			}
+		}
+	} else
+	{
+		// Wait till the flag is enabled
+		while(RCC_getFlagStatus(flag) == RESET)
+		{
+			if((MISC_timeoutGetTick() - startTicks) > timeout)
+			{
+				return STATUS_TIMEOUT;
+			}
+		}
+	}
+
+	return STATUS_OK;
 }
