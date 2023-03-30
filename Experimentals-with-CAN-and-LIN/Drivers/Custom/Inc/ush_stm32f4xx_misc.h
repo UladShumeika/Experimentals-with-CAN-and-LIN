@@ -108,6 +108,9 @@ typedef enum
 //---------------------------------------------------------------------------
 // Macros
 //---------------------------------------------------------------------------
+#define IS_MISC_PWR_FLAGS(FLAG)						   (((FLAG) == PWR_FLAG_ODSWRDY) || \
+														((FLAG) == PWR_FLAG_ODRDY))
+
 #define IS_MISC_PWR_VOLTAGE_SCALING(SCALE)			   (((SCALE) == PWR_VOLTAGE_SCALE_1)  || \
 														((SCALE) == PWR_VOLTAGE_SCALE_2)  || \
 														((SCALE) == PWR_VOLTAGE_SCALE_3))
