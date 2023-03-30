@@ -89,6 +89,55 @@ typedef struct
 } USH_RCC_PLL_settingsTypeDef;
 
 /**
+ * @brief RCC system clock type enumeration.
+ */
+typedef enum
+{
+	RCC_CLOCKTYPE_SYSCLK	= 0x00UL,	/* SYSCLK will be configured */
+	RCC_CLOCKTYPE_HCLK		= 0x02UL,	/* HCLK will be configured */
+	RCC_CLOCKTYPE_PCLK1		= 0x04UL,	/* PCLK1 will be configured */
+	RCC_CLOCKTYPE_PCLK2		= 0x08UL	/* PCLK2 will be configured */
+} USH_RCC_systemClockTypes;
+
+/**
+ * @brief RCC SYSCLK source enumeration.
+ */
+typedef enum
+{
+	RCC_SYSCLKSOURCE_HSI		= RCC_CFGR_SWS_HSI,		/* HSI oscillator selected as system clock */
+	RCC_SYSCLKSOURCE_HSE		= RCC_CFGR_SWS_HSE,		/* HSE oscillator selected as system clock*/
+	RCC_SYSCLKSOURCE_PLLCLK		= RCC_CFGR_SWS_PLL		/* PLL selected as system clock	*/
+} USH_RCC_sysclkSource;
+
+/**
+ * @brief RCC SYSCLK dividers enumeration.
+ */
+typedef enum
+{
+	RCC_SYSCLK_DIVIDER_1		= RCC_CFGR_HPRE_DIV1,		/* SYSCLK not divided */
+	RCC_SYSCLK_DIVIDER_2		= RCC_CFGR_HPRE_DIV2, 		/* SYSCLK divided by 2 */
+	RCC_SYSCLK_DIVIDER_4		= RCC_CFGR_HPRE_DIV4,		/* SYSCLK divided by 4 */
+	RCC_SYSCLK_DIVIDER_8		= RCC_CFGR_HPRE_DIV8,		/* SYSCLK divided by 8 */
+	RCC_SYSCLK_DIVIDER_16		= RCC_CFGR_HPRE_DIV16,		/* SYSCLK divided by 16 */
+	RCC_SYSCLK_DIVIDER_64		= RCC_CFGR_HPRE_DIV64,		/* SYSCLK divided by 64 */
+	RCC_SYSCLK_DIVIDER_128		= RCC_CFGR_HPRE_DIV128,		/* SYSCLK divided by 128 */
+	RCC_SYSCLK_DIVIDER_256		= RCC_CFGR_HPRE_DIV256,		/* SYSCLK divided by 256 */
+	RCC_SYSCLK_DIVIDER_512		= RCC_CFGR_HPRE_DIV512		/* SYSCLK divided by 512 */
+} USH_RCC_AHBclkDividers;
+
+/**
+ * @brief RCC HCLK clock dividers enumeration.
+ */
+typedef enum
+{
+	RCC_HCLK_DIVIDER_1		= RCC_CFGR_PPRE1_DIV1,		/* HCLK not divided */
+	RCC_HCLK_DIVIDER_2		= RCC_CFGR_PPRE1_DIV2,		/* HCLK divided by 2 */
+	RCC_HCLK_DIVIDER_4		= RCC_CFGR_PPRE1_DIV4,		/* HCLK divided by 4 */
+	RCC_HCLK_DIVIDER_8		= RCC_CFGR_PPRE1_DIV8,		/* HCLK divided by 8 */
+	RCC_HCLK_DIVIDER_16		= RCC_CFGR_PPRE1_DIV16		/* HCLK divided by 16 */
+} USH_RCC_APB1_2clkDividerts;
+
+/**
  * @brief RCC oscillator initialization structure definition.
  */
 typedef struct
@@ -101,6 +150,28 @@ typedef struct
 	USH_RCC_PLL_settingsTypeDef PLL;			/* PLL settings structure. */
 
 } USH_RCC_oscInitTypeDef;
+
+/**
+  * @brief RCC System, AHB and APB busses clock configuration structure definition.
+  */
+typedef struct
+{
+	USH_RCC_systemClockTypes ClockType;        		/* The clock to be configured.
+                                       	   	   	   	   This parameter can be a value of @ref USH_RCC_systemClockTypes. */
+
+	USH_RCC_sysclkSource SYSCLKSource;          	/* The clock source (SYSCLKS) used as system clock.
+                                       	   	   	   	   This parameter can be a value of @ref RCC_System_Clock_Source. */
+
+	USH_RCC_AHBclkDividers AHBCLKDivider;           /* The AHB clock (HCLK) divider. This clock is derived from the system clock (SYSCLK).
+                                       	   	   	   	   This parameter can be a value of @ref USH_RCC_AHBclkDividers. */
+
+	USH_RCC_APB1_2clkDividerts APB1CLKDivider;		/* The APB1 clock (PCLK1) divider. This clock is derived from the AHB clock (HCLK).
+                                       	   	   	       This parameter can be a value of @ref USH_RCC_APB1_2clkDividerts. */
+
+	USH_RCC_APB1_2clkDividerts APB2CLKDivider;      /* The APB2 clock (PCLK2) divider. This clock is derived from the AHB clock (HCLK).
+                                       	   	   	   	   This parameter can be a value of @ref RCC_APB1_APB2_Clock_Source. */
+
+} USH_RCC_clkInitTypeDef;
 
 /**
  * @brief RCC flags enumeration
