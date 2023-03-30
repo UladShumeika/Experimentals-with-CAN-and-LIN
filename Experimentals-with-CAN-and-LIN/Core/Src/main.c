@@ -17,13 +17,9 @@
 //---------------------------------------------------------------------------
 // Defines
 //---------------------------------------------------------------------------
-#define PLLM						(4U)
-#define PLLN						(180U)
-#define PLLP						(2U)
-#define PLLQ						(4U)
-
 #define SYS_TICK_PRIORITY			(15U)
 #define SYS_TICK_1MS				(1000U)
+#define PWR_OVERDRIVE_TIMEOUT		(1000U)
 
 //---------------------------------------------------------------------------
 // Static function prototypes
@@ -71,37 +67,54 @@ int main(void)
   */
 static USH_peripheryStatus initSystemClock(void)
 {
-//	// Configure the main internal regulator output voltage
-//	RCC_APB1PeriphClockCmd(RCC_APB1ENR_PWREN, ENABLE);
-//	PWR_MainRegulatorModeConfig(PWR_Regulator_Voltage_Scale1);
-//
-//	// Configure the External High Speed oscillator (HSE)
-//	RCC_HSEConfig(RCC_HSE_ON);
-//	while(!RCC_WaitForHSEStartUp());
-//
-//	// Configure the main PLL
-//	RCC_PLLCmd(DISABLE);
-//	while(RCC_GetFlagStatus(RCC_FLAG_PLLRDY));
-//
-//	RCC_PLLConfig(RCC_PLLSource_HSE, PLLM, PLLN, PLLP, PLLQ);
-//	RCC_PLLCmd(ENABLE);
-//	while(!RCC_GetFlagStatus(RCC_FLAG_PLLRDY));
-//
-//	// Activate the Over-Drive mode
-//	PWR_OverDriveCmd(ENABLE);
-//	while(!PWR_GetFlagStatus(PWR_FLAG_ODRDY));
-//
-//	PWR_OverDriveSWCmd(ENABLE);
-//	while(!PWR_GetFlagStatus(PWR_FLAG_ODSWRDY));
-//
-//	// Configure FLASH LATENCY
-//	MISC_FLASH_setLatency(FLASH_LATENCY_5);
-//	if((READ_BIT((FLASH->ACR), FLASH_ACR_LATENCY)) != FLASH_LATENCY_5)
-//	{
-//		return ERROR;
-//	}
-//
-//	// Configure HCLK
+//	USH_RCC_oscInitTypeDef oscInitStructure;
+
+	uint32_t ticksStart = 0;
+
+	// Configure the main internal regulator output voltage
+	MISC_PWR_mainRegulatorModeConfig(PWR_VOLTAGE_SCALE_1);
+
+	// Configure the External High Speed oscillator (HSE) and the main PLL
+//	oscInitStructure.OscillatorTypes = RCC_OSCILLATORTYPE_HSE;
+//	oscInitStructure.HSE_state = RCC_HSE_ON;
+//	oscInitStructure.PLL.PLL_source = RCC_PLLSOURCE_HSE;
+//	oscInitStructure.PLL.PLL_state = RCC_PLL_ON;
+//	oscInitStructure.PLL.PLLM = 4;
+//	oscInitStructure.PLL.PLLN = 180;
+//	oscInitStructure.PLL.PLLP = 2;
+//	oscInitStructure.PLL.PLLQ = 4;
+//	RCC_oscInit(&oscInitStructure);
+
+	// Activate the Over-Drive mode
+	PWR->CR |= PWR_CR_ODEN;
+
+	// Wait till the Over-Drive mode is enabled
+	ticksStart = MISC_timeoutGetTick();
+	while(!MISC_PWR_getFlagStatus(PWR_FLAG_ODRDY))
+	{
+		if((MISC_timeoutGetTick() - ticksStart) > PWR_OVERDRIVE_TIMEOUT)
+		{
+			return STATUS_TIMEOUT;
+		}
+	}
+
+	// Activate the Over-Drive switching
+	PWR->CR |= PWR_CR_ODSWEN;
+
+	// Wait till the Over-Drive switching is enabled
+	while(!MISC_PWR_getFlagStatus(PWR_FLAG_ODSWRDY))
+	{
+		if((MISC_timeoutGetTick() - ticksStart) > PWR_OVERDRIVE_TIMEOUT)
+		{
+			return STATUS_TIMEOUT;
+		}
+	}
+
+	// Configure FLASH LATENCY
+	MISC_FLASH_setLatency(FLASH_LATENCY_5);
+	if((FLASH->ACR & FLASH_ACR_LATENCY) != FLASH_LATENCY_5) return STATUS_ERROR;
+
+	// Configure HCLK
 //	RCC_PCLK1Config(RCC_HCLK_Div16); // Set the highest APBx dividers in order to ensure that it doesn't go
 //	RCC_PCLK2Config(RCC_HCLK_Div16); // through a non-spec phase whatever we decrease or increase HCLK
 //	RCC_HCLKConfig(RCC_SYSCLK_Div1);
