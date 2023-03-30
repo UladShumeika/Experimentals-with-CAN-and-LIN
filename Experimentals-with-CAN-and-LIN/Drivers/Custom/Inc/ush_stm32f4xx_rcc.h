@@ -44,9 +44,9 @@ typedef enum
  */
 typedef enum
 {
-	RCC_HSE_OFF			= 0x00U,										/* HSE clock disabled */
-	RCC_HSE_ON			= RCC_CR_HSEON,									/* HSE clock enabled */
-	RCC_HSE_BYPASS		= ((uint32_t)(RCC_CR_HSEON | RCC_CR_HSEBYP))	/* HSE clock bypass */
+	RCC_HSE_OFF		= 0U,	/* HSE clock disabled */
+	RCC_HSE_ON,				/* HSE clock enabled */
+	RCC_HSE_BYPASS			/* HSE clock bypass */
 } USH_RCC_HSE_states;
 
 /**
@@ -55,9 +55,9 @@ typedef enum
  */
 typedef enum
 {
-	RCC_PLL_NONE	= 0x00,		/* PLL is not used */
-	RCC_PLL_ON		= 0x01,		/* PLL enabled */
-	RCC_PLL_OFF		= 0x02		/* PLL disabled */
+	RCC_PLL_NONE 	= 0U,	/* PLL is not used */
+	RCC_PLL_ON,				/* PLL enabled */
+	RCC_PLL_OFF				/* PLL disabled */
 } USH_RCC_PLL_states;
 
 /**
