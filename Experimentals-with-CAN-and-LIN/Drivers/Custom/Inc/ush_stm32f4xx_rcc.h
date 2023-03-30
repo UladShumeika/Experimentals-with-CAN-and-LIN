@@ -125,6 +125,39 @@ typedef enum
 													((FLAG) == RCC_FLAG_PLLI2SRDY) 	|| \
 													((FLAG) == RCC_FLAG_PLLSAIRDY))
 
+#define IS_RCC_OSCTYPES(OSCTYPE)				   (((OSCTYPE) == RCC_OSCILLATORTYPE_NONE) || \
+													((OSCTYPE) == RCC_OSCILLATORTYPE_HSE)  || \
+													((OSCTYPE) == RCC_OSCILLATORTYPE_HSI)  || \
+													((OSCTYPE) == RCC_OSCILLATORTYPE_LSE)  || \
+													((OSCTYPE) == RCC_OSCILLATORTYPE_LSI))
+
+#define IS_RCC_PLL_STATE(STATE)					   (((STATE) == RCC_PLL_NONE) || \
+													((STATE) == RCC_PLL_ON)   || \
+													((STATE) == RCC_PLL_OFF))
+
+#define IS_RCC_PLL_SOURCE(SOURCE)				   (((SOURCE) == RCC_PLLSOURCE_HSI) || \
+													((SOURCE) == RCC_PLLSOURCE_HSE))
+
+#define IS_RCC_PLLM_VALUE(VALUE) 				   ((2U <= (VALUE)) && ((VALUE) <= 63U))
+
+#define IS_RCC_PLLN_VALUE(VALUE) 				   ((50U <= (VALUE)) && ((VALUE) <= 432U))
+
+#define IS_RCC_PLLP_VALUE(VALUE) 				   (((VALUE) == 2U) || \
+													((VALUE) == 4U) || \
+													((VALUE) == 6U) || \
+													((VALUE) == 8U))
+
+#define IS_RCC_PLLQ_VALUE(VALUE) 				   ((2U <= (VALUE)) && ((VALUE) <= 15U))
+
+//---------------------------------------------------------------------------
+// Other macros
+//---------------------------------------------------------------------------
+
+/**
+ * @brief This macro returns the system clock source
+ */
+#define RCC_GET_SYSCLOCK_SOURCE()				   (RCC->CFGR & RCC_CFGR_SWS)
+
 //---------------------------------------------------------------------------
 // Enable peripheral clocking
 //---------------------------------------------------------------------------
