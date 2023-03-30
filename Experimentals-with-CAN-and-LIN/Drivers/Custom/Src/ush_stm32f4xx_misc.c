@@ -71,6 +71,34 @@ void MISC_PWR_mainRegulatorModeConfig(USH_PWR_voltageScaling voltageScaling)
 	PWR->CR = tempReg;
 }
 
+/**
+ * @brief 	This function returns flag status.
+ * @param	flags - PWR flags. This parameter can be a value of @ref USH_DMA_flags.
+ * @retval	Flags status.
+ */
+FlagStatus MISC_PWR_getFlagStatus(USH_PWR_flags flags)
+{
+	uint32_t statusReg = 0;
+	FlagStatus status = RESET;
+
+	// check parameters
+	assert_param(IS_MISC_PWR_FLAGS(flags));
+
+	// Read PWR->CR register
+	statusReg = PWR->CR;
+
+	// Set flags status
+	if(statusReg & flags)
+	{
+		status = SET;
+	} else
+	{
+		status = RESET;
+	}
+
+	return status;
+}
+
 //---------------------------------------------------------------------------
 // The section of timeout timer
 //---------------------------------------------------------------------------
