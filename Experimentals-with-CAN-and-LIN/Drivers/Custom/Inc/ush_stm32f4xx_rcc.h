@@ -222,6 +222,32 @@ typedef enum
 
 #define IS_RCC_PLLQ_VALUE(VALUE) 				   ((2U <= (VALUE)) && ((VALUE) <= 15U))
 
+#define IS_RCC_SYSCLK_TYPES(TYPE)			   	  (((TYPE) == RCC_CLOCKTYPE_SYSCLK) || \
+												   ((TYPE) == RCC_CLOCKTYPE_HCLK) 	|| \
+												   ((TYPE) == RCC_CLOCKTYPE_PCLK1) 	|| \
+												   ((TYPE) == RCC_CLOCKTYPE_PCLK2))
+
+#define IS_RCC_SYSCLK_SOURCE(SOURCE)			  (((SOURCE) == RCC_SYSCLKSOURCE_HSI) || \
+												   ((SOURCE) == RCC_SYSCLKSOURCE_HSE) || \
+												   ((SOURCE) == RCC_SYSCLKSOURCE_PLLCLK))
+
+#define IS_RCC_SYSCLK_DIVIDER(DIVIDER)			  (((DIVIDER) == RCC_SYSCLK_DIVIDER_1)   || \
+												   ((DIVIDER) == RCC_SYSCLK_DIVIDER_2)   || \
+												   ((DIVIDER) == RCC_SYSCLK_DIVIDER_4)   || \
+												   ((DIVIDER) == RCC_SYSCLK_DIVIDER_8)   || \
+												   ((DIVIDER) == RCC_SYSCLK_DIVIDER_16)  || \
+												   ((DIVIDER) == RCC_SYSCLK_DIVIDER_32)  || \
+												   ((DIVIDER) == RCC_SYSCLK_DIVIDER_64)  || \
+												   ((DIVIDER) == RCC_SYSCLK_DIVIDER_128) || \
+												   ((DIVIDER) == RCC_SYSCLK_DIVIDER_256) || \
+												   ((DIVIDER) == RCC_SYSCLK_DIVIDER_512))
+
+#define IS_RCC_PCLK_DIVIDER(DIVIDER)			 (((DIVIDER) == RCC_HCLK_DIVIDER_1)  || \
+												  ((DIVIDER) == RCC_HCLK_DIVIDER_2)  || \
+												  ((DIVIDER) == RCC_HCLK_DIVIDER_4)  || \
+												  ((DIVIDER) == RCC_HCLK_DIVIDER_8)	 || \
+												  ((DIVIDER) == RCC_HCLK_DIVIDER_16))
+
 //---------------------------------------------------------------------------
 // Other macros
 //---------------------------------------------------------------------------
