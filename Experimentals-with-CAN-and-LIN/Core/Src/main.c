@@ -25,8 +25,8 @@
 // Static function prototypes
 //---------------------------------------------------------------------------
 static void initMicrocontroller(void);
-static USH_peripheryStatus initSysTick(uint32_t tickPriority);
 static USH_peripheryStatus initSystemClock(void);
+static USH_peripheryStatus initSysTick(uint32_t tickPriority);
 
 //---------------------------------------------------------------------------
 // Main function
@@ -41,11 +41,17 @@ int main(void)
 	// Initialize flash, cashes and timeout timer
 	initMicrocontroller();
 
+	// Initialize system clock
+	initSystemClock();
+
+
+
+
+
 	// Initialize sysTick timer
 	initSysTick(SYS_TICK_PRIORITY);
 
-	// Initialize system clock
-	initSystemClock();
+
 
 	// Call init function for freertos objects (in freertos.c)
 	freeRtosInit();
@@ -67,23 +73,29 @@ int main(void)
   */
 static USH_peripheryStatus initSystemClock(void)
 {
-//	USH_RCC_oscInitTypeDef oscInitStructure;
+	USH_peripheryStatus status = STATUS_OK;
+	USH_RCC_PLL_settingsTypeDef pllInitStructure = {0};
 
 	uint32_t ticksStart = 0;
 
 	// Configure the main internal regulator output voltage
 	MISC_PWR_mainRegulatorModeConfig(PWR_VOLTAGE_SCALE_1);
 
-	// Configure the External High Speed oscillator (HSE) and the main PLL
-//	oscInitStructure.OscillatorTypes = RCC_OSCILLATORTYPE_HSE;
-//	oscInitStructure.HSE_state = RCC_HSE_ON;
-//	oscInitStructure.PLL.PLL_source = RCC_PLLSOURCE_HSE;
-//	oscInitStructure.PLL.PLL_state = RCC_PLL_ON;
-//	oscInitStructure.PLL.PLLM = 4;
-//	oscInitStructure.PLL.PLLN = 180;
-//	oscInitStructure.PLL.PLLP = 2;
-//	oscInitStructure.PLL.PLLQ = 4;
-//	RCC_oscInit(&oscInitStructure);
+	// Enable HSE oscillator
+	status = RCC_initHSE();
+
+	// Configure PLL
+	pllInitStructure.PLL_source 	= RCC_PLLSOURCE_HSE;
+	pllInitStructure.PLLM 			= 4U;
+	pllInitStructure.PLLN 			= 180U;
+	pllInitStructure.PLLP 			= 2U;
+	pllInitStructure.PLLQ 			= 4U;
+	status = RCC_initPLL(&pllInitStructure);
+
+
+
+
+
 
 	// Activate the Over-Drive mode
 	PWR->CR |= PWR_CR_ODEN;
