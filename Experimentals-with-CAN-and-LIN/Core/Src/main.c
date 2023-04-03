@@ -121,11 +121,11 @@ static USH_peripheryStatus initSystemClock(void)
 	clksInitStructure.APB2_divider 		= RCC_HCLK_DIVIDER_2;
 	status = RCC_initClocks(&clksInitStructure);
 
-//	while(RCC_GetSYSCLKSource() != RCC_CFGR_SWS_PLL);
-//
-//	// Configure PCLK1
-//	RCC_PCLK1Config(RCC_HCLK_Div4);
-//
+	// Update the global variable SystemCoreClock
+	SystemCoreClockUpdate();
+
+	// Update timeout timer
+	MISC_timeoutTimerInit();
 
 	return status;
 }
