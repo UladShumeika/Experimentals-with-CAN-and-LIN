@@ -67,6 +67,7 @@ static USH_peripheryStatus initSystemClock(void)
 {
 	USH_peripheryStatus status = STATUS_OK;
 	USH_RCC_PLL_settingsTypeDef pllInitStructure = {0};
+	USH_RCC_clocksInitTypeDef clksInitStructure = {0};
 
 	uint32_t ticksStart = 0;
 
@@ -113,28 +114,20 @@ static USH_peripheryStatus initSystemClock(void)
 	MISC_FLASH_setLatency(FLASH_LATENCY_5);
 	if((FLASH->ACR & FLASH_ACR_LATENCY) != FLASH_LATENCY_5) return STATUS_ERROR;
 
-	// Configure HCLK
-//	RCC_PCLK1Config(RCC_HCLK_Div16); // Set the highest APBx dividers in order to ensure that it doesn't go
-//	RCC_PCLK2Config(RCC_HCLK_Div16); // through a non-spec phase whatever we decrease or increase HCLK
-//	RCC_HCLKConfig(RCC_SYSCLK_Div1);
-//
-//	// Configure SYSCLK
-//	RCC_SYSCLKConfig(RCC_SYSCLKSource_PLLCLK);
+	// Configure SYSCLK, HCLK and PCLKs
+	clksInitStructure.SYSCLK_source		= RCC_SYSCLKSOURCE_PLL;
+	clksInitStructure.HCLK_divider  	= RCC_SYSCLK_DIVIDER_1;
+	clksInitStructure.APB1_divider  	= RCC_HCLK_DIVIDER_4;
+	clksInitStructure.APB2_divider 		= RCC_HCLK_DIVIDER_2;
+	status = RCC_initClocks(&clksInitStructure);
+
 //	while(RCC_GetSYSCLKSource() != RCC_CFGR_SWS_PLL);
 //
 //	// Configure PCLK1
 //	RCC_PCLK1Config(RCC_HCLK_Div4);
 //
-//	// Configure PCLK2
-//	RCC_PCLK2Config(RCC_HCLK_Div2);
-//
-//	// Update the global variable SystemCoreClock
-//	SystemCoreClockUpdate();
-//
-//	// Update SysTick with new SystemCoreClock
-//	initSysTick(SYS_TICK_PRIORITY);
-//
-//	return SUCCESS;
+
+	return status;
 }
 
 /**
