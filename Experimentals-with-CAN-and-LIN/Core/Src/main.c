@@ -17,8 +17,6 @@
 //---------------------------------------------------------------------------
 // Defines
 //---------------------------------------------------------------------------
-#define SYS_TICK_PRIORITY			(15U)
-#define SYS_TICK_1MS				(1000U)
 #define PWR_OVERDRIVE_TIMEOUT		(1000U)
 
 //---------------------------------------------------------------------------
@@ -26,7 +24,7 @@
 //---------------------------------------------------------------------------
 static void initMicrocontroller(void);
 static USH_peripheryStatus initSystemClock(void);
-static USH_peripheryStatus initSysTick(uint32_t tickPriority);
+static USH_peripheryStatus initSysTick(void);
 
 //---------------------------------------------------------------------------
 // Main function
@@ -44,14 +42,8 @@ int main(void)
 	// Initialize system clock
 	initSystemClock();
 
-
-
-
-
 	// Initialize sysTick timer
-	initSysTick(SYS_TICK_PRIORITY);
-
-
+	initSysTick();
 
 	// Call init function for freertos objects (in freertos.c)
 	freeRtosInit();
@@ -91,11 +83,6 @@ static USH_peripheryStatus initSystemClock(void)
 	pllInitStructure.PLLP 			= 2U;
 	pllInitStructure.PLLQ 			= 4U;
 	status = RCC_initPLL(&pllInitStructure);
-
-
-
-
-
 
 	// Activate the Over-Drive mode
 	PWR->CR |= PWR_CR_ODEN;
@@ -152,26 +139,16 @@ static USH_peripheryStatus initSystemClock(void)
 
 /**
   * @brief	This function is used to initialize SysTick. The SysTick is configured
-  * 		to have 1ms time base with a dedicated Tick interrupt priority
-  * @param 	tickPriority Tick interrupt priority
-  * @retval	ErrorStatus Status
+  * 		to have 1ms time base with a dedicated Tick interrupt priority.
+  * @retval	The peripheral status.
   */
-static USH_peripheryStatus initSysTick(uint32_t tickPriority)
+static USH_peripheryStatus initSysTick(void)
 {
 	// Configure the SysTick to have interrupt in 1ms time basis
-	if(SysTick_Config(SystemCoreClock / SYS_TICK_1MS) > 0U)
+	if(SysTick_Config(SystemCoreClock / SYS_TICK_1MS) != 0U)
 	{
 		return STATUS_ERROR;
 	}
-
-	// Configure the SysTick IRQ priority
-	if(tickPriority < (1UL << __NVIC_PRIO_BITS))
-	{
-		NVIC_SetPriority(SysTick_IRQn, tickPriority);
-	} else
-		{
-			return STATUS_ERROR;
-		}
 
 	return STATUS_OK;
 }
