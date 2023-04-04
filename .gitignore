@@ -1,10 +1,5 @@
 # ignored directories
-Experimentals-with-CAN-and-LIN/.settings/
 Experimentals-with-CAN-and-LIN/Debug/
-*.cproject
-*.project
-*.launch
-
 
 # Prerequisites
 *.d
