@@ -1,10 +1,5 @@
 # ignored directories
-Experimentals-with-CAN-and-LIN/.settings/
 Experimentals-with-CAN-and-LIN/Debug/
-*.cproject
-*.project
-*.launch
-
 
 # Prerequisites
 *.d
@@ -58,3 +53,5 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+*.launch
