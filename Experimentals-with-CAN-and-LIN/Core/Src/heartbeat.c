@@ -54,7 +54,8 @@ static void HEARTBEAT_gpioInit(void)
 {
 	USH_GPIO_initTypeDef gpioInitStructure = {0};
 
-	__RCC_GPIOGclockEnable();
+	// GPIOG clock enable
+	__RCC_GPIOG_CLOCK_ENABLE();
 
 	// Configure GPIO pins : PIN_LED_HEARTBEAT
 	gpioInitStructure.GPIOx				= PORT_LED_HEARTBEAT;
