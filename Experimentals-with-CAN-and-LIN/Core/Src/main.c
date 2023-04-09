@@ -17,20 +17,14 @@
 //---------------------------------------------------------------------------
 // Defines
 //---------------------------------------------------------------------------
-#define PLLM						(4U)
-#define PLLN						(180U)
-#define PLLP						(2U)
-#define PLLQ						(4U)
-
-#define SYS_TICK_PRIORITY			(15U)
-#define SYS_TICK_1MS				(1000U)
+#define PWR_OVERDRIVE_TIMEOUT		(1000U)
 
 //---------------------------------------------------------------------------
 // Static function prototypes
 //---------------------------------------------------------------------------
 static void initMicrocontroller(void);
-static ErrorStatus initSysTick(uint32_t tickPriority);
-static ErrorStatus initSystemClock(void);
+static USH_peripheryStatus initSystemClock(void);
+static USH_peripheryStatus initSysTick(void);
 
 //---------------------------------------------------------------------------
 // Main function
@@ -42,17 +36,14 @@ static ErrorStatus initSystemClock(void);
   */
 int main(void)
 {
-	// Initialize Flash and cashes
+	// Initialize flash, cashes and timeout timer
 	initMicrocontroller();
 
 	// Initialize system clock
 	initSystemClock();
 
 	// Initialize sysTick timer
-	initSysTick(SYS_TICK_PRIORITY);
-
-	// Initialize timeout timer
-//	MISC_timeoutTimer();
+	initSysTick();
 
 	// Call init function for freertos objects (in freertos.c)
 	freeRtosInit();
@@ -72,86 +63,87 @@ int main(void)
   * @brief This function is used to initialize system clock
   * @retval ErrorStatus Status
   */
-static ErrorStatus initSystemClock(void)
+static USH_peripheryStatus initSystemClock(void)
 {
-//	// Configure the main internal regulator output voltage
-//	RCC_APB1PeriphClockCmd(RCC_APB1ENR_PWREN, ENABLE);
-//	PWR_MainRegulatorModeConfig(PWR_Regulator_Voltage_Scale1);
-//
-//	// Configure the External High Speed oscillator (HSE)
-//	RCC_HSEConfig(RCC_HSE_ON);
-//	while(!RCC_WaitForHSEStartUp());
-//
-//	// Configure the main PLL
-//	RCC_PLLCmd(DISABLE);
-//	while(RCC_GetFlagStatus(RCC_FLAG_PLLRDY));
-//
-//	RCC_PLLConfig(RCC_PLLSource_HSE, PLLM, PLLN, PLLP, PLLQ);
-//	RCC_PLLCmd(ENABLE);
-//	while(!RCC_GetFlagStatus(RCC_FLAG_PLLRDY));
-//
-//	// Activate the Over-Drive mode
-//	PWR_OverDriveCmd(ENABLE);
-//	while(!PWR_GetFlagStatus(PWR_FLAG_ODRDY));
-//
-//	PWR_OverDriveSWCmd(ENABLE);
-//	while(!PWR_GetFlagStatus(PWR_FLAG_ODSWRDY));
-//
-//	// Configure FLASH LATENCY
-//	MISC_FLASH_setLatency(FLASH_LATENCY_5);
-//	if((READ_BIT((FLASH->ACR), FLASH_ACR_LATENCY)) != FLASH_LATENCY_5)
-//	{
-//		return ERROR;
-//	}
-//
-//	// Configure HCLK
-//	RCC_PCLK1Config(RCC_HCLK_Div16); // Set the highest APBx dividers in order to ensure that it doesn't go
-//	RCC_PCLK2Config(RCC_HCLK_Div16); // through a non-spec phase whatever we decrease or increase HCLK
-//	RCC_HCLKConfig(RCC_SYSCLK_Div1);
-//
-//	// Configure SYSCLK
-//	RCC_SYSCLKConfig(RCC_SYSCLKSource_PLLCLK);
-//	while(RCC_GetSYSCLKSource() != RCC_CFGR_SWS_PLL);
-//
-//	// Configure PCLK1
-//	RCC_PCLK1Config(RCC_HCLK_Div4);
-//
-//	// Configure PCLK2
-//	RCC_PCLK2Config(RCC_HCLK_Div2);
-//
-//	// Update the global variable SystemCoreClock
-//	SystemCoreClockUpdate();
-//
-//	// Update SysTick with new SystemCoreClock
-//	initSysTick(SYS_TICK_PRIORITY);
-//
-//	return SUCCESS;
+	USH_peripheryStatus status = STATUS_OK;
+	USH_RCC_PLL_settingsTypeDef pllInitStructure = {0};
+	USH_RCC_clocksInitTypeDef clksInitStructure = {0};
+
+	uint32_t ticksStart = 0;
+
+	// Configure the main internal regulator output voltage
+	MISC_PWR_mainRegulatorModeConfig(PWR_VOLTAGE_SCALE_1);
+
+	// Enable HSE oscillator
+	status = RCC_initHSE();
+
+	// Configure PLL
+	pllInitStructure.PLL_source 	= RCC_PLLSOURCE_HSE;
+	pllInitStructure.PLLM 			= 4U;
+	pllInitStructure.PLLN 			= 180U;
+	pllInitStructure.PLLP 			= 2U;
+	pllInitStructure.PLLQ 			= 4U;
+	status = RCC_initPLL(&pllInitStructure);
+
+	// Activate the Over-Drive mode
+	PWR->CR |= PWR_CR_ODEN;
+
+	// Wait till the Over-Drive mode is enabled
+	ticksStart = MISC_timeoutGetTick();
+	while(!MISC_PWR_getFlagStatus(PWR_FLAG_ODRDY))
+	{
+		if((MISC_timeoutGetTick() - ticksStart) > PWR_OVERDRIVE_TIMEOUT)
+		{
+			return STATUS_TIMEOUT;
+		}
+	}
+
+	// Activate the Over-Drive switching
+	PWR->CR |= PWR_CR_ODSWEN;
+
+	// Wait till the Over-Drive switching is enabled
+	while(!MISC_PWR_getFlagStatus(PWR_FLAG_ODSWRDY))
+	{
+		if((MISC_timeoutGetTick() - ticksStart) > PWR_OVERDRIVE_TIMEOUT)
+		{
+			return STATUS_TIMEOUT;
+		}
+	}
+
+	// Configure FLASH LATENCY
+	MISC_FLASH_setLatency(FLASH_LATENCY_5);
+	if((FLASH->ACR & FLASH_ACR_LATENCY) != FLASH_LATENCY_5) return STATUS_ERROR;
+
+	// Configure SYSCLK, HCLK and PCLKs
+	clksInitStructure.SYSCLK_source		= RCC_SYSCLKSOURCE_PLL;
+	clksInitStructure.HCLK_divider  	= RCC_SYSCLK_DIVIDER_1;
+	clksInitStructure.APB1_divider  	= RCC_HCLK_DIVIDER_4;
+	clksInitStructure.APB2_divider 		= RCC_HCLK_DIVIDER_2;
+	status = RCC_initClocks(&clksInitStructure);
+
+	// Update the global variable SystemCoreClock
+	SystemCoreClockUpdate();
+
+	// Update timeout timer
+	MISC_timeoutTimerInit();
+
+	return status;
 }
 
 /**
   * @brief	This function is used to initialize SysTick. The SysTick is configured
-  * 		to have 1ms time base with a dedicated Tick interrupt priority
-  * @param 	tickPriority Tick interrupt priority
-  * @retval	ErrorStatus Status
+  * 		to have 1ms time base with a dedicated Tick interrupt priority.
+  * @retval	The peripheral status.
   */
-static ErrorStatus initSysTick(uint32_t tickPriority)
+static USH_peripheryStatus initSysTick(void)
 {
 	// Configure the SysTick to have interrupt in 1ms time basis
-	if(SysTick_Config(SystemCoreClock / SYS_TICK_1MS) > 0U)
+	if(SysTick_Config(SystemCoreClock / SYS_TICK_1MS) != 0U)
 	{
-		return ERROR;
+		return STATUS_ERROR;
 	}
 
-	// Configure the SysTick IRQ priority
-	if(tickPriority < (1UL << __NVIC_PRIO_BITS))
-	{
-		NVIC_SetPriority(SysTick_IRQn, tickPriority);
-	} else
-		{
-			return ERROR;
-		}
-
-	return SUCCESS;
+	return STATUS_OK;
 }
 
 /**
@@ -159,7 +151,8 @@ static ErrorStatus initSysTick(uint32_t tickPriority)
   * 		It performs the following:
   * 			Configure Flash prefetch, Instruction cache, Data cache;
   * 			Set NVIC Group Priority to 4;
-  * @retval None
+  * 			Initialize timeout timer;
+  * @retval None.
   */
 static void initMicrocontroller(void)
 {
@@ -169,5 +162,8 @@ static void initMicrocontroller(void)
 	MISC_FLASH_dataCacheCmd(ENABLE);
 
 	// Set NVIC Group Priority to 4
-	//NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+	MISC_NVIC_setPriorityGrouping(NVIC_PRIORITYGROUP_4);
+
+	// Initialize timeout timer
+	MISC_timeoutTimerInit();
 }
