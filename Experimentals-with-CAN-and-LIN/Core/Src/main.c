@@ -42,17 +42,14 @@ static ErrorStatus initSystemClock(void);
   */
 int main(void)
 {
-	// Initialize Flash and cashes
+	// Initialize flash, cashes and timeout timer
 	initMicrocontroller();
-
-	// Initialize system clock
-	initSystemClock();
 
 	// Initialize sysTick timer
 	initSysTick(SYS_TICK_PRIORITY);
 
-	// Initialize timeout timer
-//	MISC_timeoutTimer();
+	// Initialize system clock
+	initSystemClock();
 
 	// Call init function for freertos objects (in freertos.c)
 	freeRtosInit();
@@ -159,7 +156,8 @@ static ErrorStatus initSysTick(uint32_t tickPriority)
   * 		It performs the following:
   * 			Configure Flash prefetch, Instruction cache, Data cache;
   * 			Set NVIC Group Priority to 4;
-  * @retval None
+  * 			Initialize timeout timer;
+  * @retval None.
   */
 static void initMicrocontroller(void)
 {
@@ -170,4 +168,7 @@ static void initMicrocontroller(void)
 
 	// Set NVIC Group Priority to 4
 	MISC_NVIC_setPriorityGrouping(NVIC_PRIORITYGROUP_4);
+
+	// Initialize timeout timer
+	MISC_timeoutTimerInit();
 }
