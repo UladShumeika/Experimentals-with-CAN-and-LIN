@@ -36,4 +36,8 @@ void freeRtosInit(void)
 #ifdef HEARTBEAT
 	HEARTBEAT_freeRtosInit();
 #endif
+
+#ifdef CAN
+	bxCAN_freeRtosInit();
+#endif
 }
