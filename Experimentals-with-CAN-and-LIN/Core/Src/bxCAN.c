@@ -2,3 +2,17 @@
 // Includes
 //---------------------------------------------------------------------------
 #include "bxCAN.h"
+
+//---------------------------------------------------------------------------
+// Initialization functions
+//---------------------------------------------------------------------------
+
+/**
+  * @brief  FreeRTOS initialization for bxCAN module.
+  * @param  None.
+  * @retval None.
+  */
+void bxCAN_freeRtosInit(void)
+{
+
+}
