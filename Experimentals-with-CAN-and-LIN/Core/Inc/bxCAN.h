@@ -13,5 +13,7 @@
 // External function prototypes
 //---------------------------------------------------------------------------
 void bxCAN_freeRtosInit(void);
+void bxCAN_sendMessages(void const *argument);
+void bxCAN_receiveMessages(void const *argument);
 
 #endif /* __CAN_H */
