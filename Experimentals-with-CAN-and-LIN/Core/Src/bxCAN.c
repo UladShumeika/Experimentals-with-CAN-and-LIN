@@ -2,6 +2,7 @@
 // Includes
 //---------------------------------------------------------------------------
 #include "bxCAN.h"
+#include <string.h>
 
 //---------------------------------------------------------------------------
 // Defines
@@ -43,12 +44,21 @@ static void bxCAN_CAN1_init(void);
   */
 void bxCAN_sendMessages(void const *argument)
 {
+	CAN_TxHeaderTypeDef txMessage = {0};
+	const char data[] = "Hello!";
+
 	bxCAN_CAN1_init();
+
+	txMessage.StdId		= 0x0000U;
+	txMessage.IDE		= CAN_ID_STD;
+	txMessage.RTR		= CAN_RTR_DATA;
+	txMessage.DLC		= strlen(data);
 
 	// Infinite loop
 	for(;;)
 	{
-		osDelay(1);
+		CAN_addTxMessage(USE_CAN, &txMessage, (uint8_t*)data);
+		osDelay(100);
 	}
 }
 
