@@ -6,7 +6,14 @@
 //---------------------------------------------------------------------------
 // Defines
 //---------------------------------------------------------------------------
-#define USE_CAN						(CAN1)
+#define USE_CAN							(CAN1)
+
+// CAN1 interrupt priorities
+#define CAN1_TX_PREEMPPRIORITY			(5U)
+#define CAN1_TX_SUBPRIORITY				(0U)
+
+#define CAN1_RX0_PREEMPPRIORITY			(5U)
+#define CAN1_RX0_SUBPRIORITY			(0U)
 
 //---------------------------------------------------------------------------
 // Descriptions of FreeRTOS elements
@@ -81,6 +88,21 @@ static void bxCAN_CAN1_init(void)
 	canInit.ReceiveFifoLocked			= DISABLE;
 	canInit.TransmitFifoPriority		= ENABLE;
 	CAN_init(&canInit);
+}
+
+/**
+ * @brief  	This function is used to initialize CAN modules global interrupts.
+ * @note	This function should not be modified, when global interrupts of CAN modules are required,
+ * 			this function must be implemented in the user file.
+ * @retval	None.
+ */
+void CAN_initGlobalInterrupts(void)
+{
+	MISC_NVIC_SetPriority(CAN1_TX_IRQn, CAN1_TX_PREEMPPRIORITY, CAN1_TX_SUBPRIORITY);
+	MISC_NVIC_EnableIRQ(CAN1_TX_IRQn);
+
+	MISC_NVIC_SetPriority(CAN1_RX0_IRQn, CAN1_RX0_PREEMPPRIORITY, CAN1_RX0_SUBPRIORITY);
+	MISC_NVIC_EnableIRQ(CAN1_RX0_IRQn);
 }
 
 /**
