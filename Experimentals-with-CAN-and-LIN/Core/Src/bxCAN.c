@@ -25,6 +25,7 @@ static osThreadId receiveMessagesHandle;
 // Structure definitions
 //---------------------------------------------------------------------------
 USH_CAN_settingsTypeDef canInit = {0};
+USH_CAN_filterTypeDef filterConfig = {0};
 
 //---------------------------------------------------------------------------
 // Static function prototypes
@@ -88,6 +89,21 @@ static void bxCAN_CAN1_init(void)
 	canInit.ReceiveFifoLocked			= DISABLE;
 	canInit.TransmitFifoPriority		= ENABLE;
 	CAN_init(&canInit);
+
+	filterConfig.FilterIdHigh			= 0x0000U;
+	filterConfig.FilterIdLow			= 0x0000U;
+	filterConfig.FilterMaskIdHigh		= 0x0000U;
+	filterConfig.FilterMaskIdLow		= 0x0000U;
+	filterConfig.FilterFIFOAssignment	= CAN_FILTER_FIFO_0;
+	filterConfig.FilterBank				= 0U;
+	filterConfig.FilterMode				= CAN_FILTER_MODE_IDMASK;
+	filterConfig.FilterScale			= CAN_FILTERSCALE_32BIT;
+	filterConfig.FilterActivation		= CAN_FILTER_ENABLE;
+	CAN_filtersConfig(USE_CAN, &filterConfig);
+
+	CAN_enable(USE_CAN);
+
+	CAN_interruptConfig(USE_CAN, (CAN_IT_TX_MAILBOX_EMPTY | CAN_IT_RX_FIFO0_MSG_PENDING), ENABLE);
 }
 
 /**
