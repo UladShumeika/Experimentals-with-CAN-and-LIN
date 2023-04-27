@@ -7,6 +7,7 @@
 //---------------------------------------------------------------------------
 // External structures
 //---------------------------------------------------------------------------
+extern USH_CAN_settingsTypeDef canInit;
 
 /******************************************************************************/
 /*           Cortex-M4 Processor Interruption and Exception Handlers          */
@@ -96,4 +97,20 @@ void TIM8_TRG_COM_TIM14_IRQHandler(void)
 			MISC_timeoutTimerIncTick();
 		}
 	}
+}
+
+/**
+  * @brief This function handles CAN1 TX interrupts.
+  */
+void CAN1_TX_IRQHandler(void)
+{
+	CAN_IRQHandler(&canInit);
+}
+
+/**
+  * @brief This function handles CAN1 RX0 interrupts.
+  */
+void CAN1_RX0_IRQHandler(void)
+{
+	CAN_IRQHandler(&canInit);
 }
