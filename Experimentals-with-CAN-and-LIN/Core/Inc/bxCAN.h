@@ -1,29 +1,19 @@
 //---------------------------------------------------------------------------
 // Define to prevent recursive inclusion
 //---------------------------------------------------------------------------
-#ifndef __MAIN_H
-#define __MAIN_H
+#ifndef __CAN_H
+#define __CAN_H
 
 //---------------------------------------------------------------------------
 // Includes
 //---------------------------------------------------------------------------
-#include "stm32f4xx.h"
-#include "cmsis_os.h"
-
-//---------------------------------------------------------------------------
-// Module's includes
-//---------------------------------------------------------------------------
-#ifdef HEARTBEAT
-	#include "heartbeat.h"
-#endif
-
-#ifdef CAN
-	#include "bxCAN.h"
-#endif
+#include "main.h"
 
 //---------------------------------------------------------------------------
 // External function prototypes
 //---------------------------------------------------------------------------
-void freeRtosInit(void);
+void bxCAN_freeRtosInit(void);
+void bxCAN_sendMessages(void const *argument);
+void bxCAN_receiveMessages(void const *argument);
 
-#endif /* __MAIN_H */
+#endif /* __CAN_H */
