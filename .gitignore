@@ -1,4 +1,5 @@
 # ignored directories
 ECU1_429/Debug/
+ECU2_407/Debug/
 
 *.launch
