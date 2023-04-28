@@ -6,8 +6,8 @@
 //---------------------------------------------------------------------------
 // Defines
 //---------------------------------------------------------------------------
-#define PORT_LED_HEARTBEAT				GPIOG
-#define PIN_LED_HEARTBEAT				GPIO_PIN_13
+#define PORT_LED_HEARTBEAT				GPIOD
+#define PIN_LED_HEARTBEAT				GPIO_PIN_15
 #define BLICK_DELAY_HEARTBEAT			(1000U)				// ms
 
 //---------------------------------------------------------------------------
@@ -55,7 +55,7 @@ static void HEARTBEAT_gpioInit(void)
 	USH_GPIO_initTypeDef gpioInitStructure = {0};
 
 	// GPIOG clock enable
-	__RCC_GPIOG_CLOCK_ENABLE();
+	__RCC_GPIOD_CLOCK_ENABLE();
 
 	// Configure GPIO pins : PIN_LED_HEARTBEAT
 	gpioInitStructure.GPIOx				= PORT_LED_HEARTBEAT;
