@@ -49,16 +49,17 @@ void bxCAN_sendMessages(void const *argument)
 
 	bxCAN_CAN2_init();
 
-	txMessage.StdId		= 0x0000U;
+	txMessage.StdId		= 0x0001U;
 	txMessage.IDE		= CAN_ID_STD;
 	txMessage.RTR		= CAN_RTR_DATA;
 	txMessage.DLC		= strlen(data);
+
 
 	// Infinite loop
 	for(;;)
 	{
 		CAN_addTxMessage(USE_CAN, &txMessage, (uint8_t*)data);
-		osDelay(100);
+		osDelay(500);
 	}
 }
 
