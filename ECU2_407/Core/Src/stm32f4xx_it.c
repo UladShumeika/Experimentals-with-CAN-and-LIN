@@ -102,7 +102,7 @@ void TIM8_TRG_COM_TIM14_IRQHandler(void)
 /**
   * @brief This function handles CAN1 TX interrupts.
   */
-void CAN1_TX_IRQHandler(void)
+void CAN2_TX_IRQHandler(void)
 {
 	CAN_IRQHandler(&canInit);
 }
@@ -110,7 +110,7 @@ void CAN1_TX_IRQHandler(void)
 /**
   * @brief This function handles CAN1 RX0 interrupts.
   */
-void CAN1_RX0_IRQHandler(void)
+void CAN2_RX0_IRQHandler(void)
 {
 	CAN_IRQHandler(&canInit);
 }
