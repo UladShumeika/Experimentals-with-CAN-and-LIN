@@ -7,14 +7,14 @@
 //---------------------------------------------------------------------------
 // Defines
 //---------------------------------------------------------------------------
-#define USE_CAN							(CAN1)
+#define USE_CAN							(CAN2)
 
 // CAN1 interrupt priorities
-#define CAN1_TX_PREEMPPRIORITY			(5U)
-#define CAN1_TX_SUBPRIORITY				(0U)
+#define CAN2_TX_PREEMPPRIORITY			(5U)
+#define CAN2_TX_SUBPRIORITY				(0U)
 
-#define CAN1_RX0_PREEMPPRIORITY			(5U)
-#define CAN1_RX0_SUBPRIORITY			(0U)
+#define CAN2_RX0_PREEMPPRIORITY			(5U)
+#define CAN2_RX0_SUBPRIORITY			(0U)
 
 //---------------------------------------------------------------------------
 // Descriptions of FreeRTOS elements
@@ -124,11 +124,11 @@ static void bxCAN_CAN1_init(void)
  */
 void CAN_initGlobalInterrupts(void)
 {
-	MISC_NVIC_SetPriority(CAN1_TX_IRQn, CAN1_TX_PREEMPPRIORITY, CAN1_TX_SUBPRIORITY);
-	MISC_NVIC_EnableIRQ(CAN1_TX_IRQn);
+	MISC_NVIC_SetPriority(CAN2_TX_IRQn, CAN2_TX_PREEMPPRIORITY, CAN2_TX_SUBPRIORITY);
+	MISC_NVIC_EnableIRQ(CAN2_TX_IRQn);
 
-	MISC_NVIC_SetPriority(CAN1_RX0_IRQn, CAN1_RX0_PREEMPPRIORITY, CAN1_RX0_SUBPRIORITY);
-	MISC_NVIC_EnableIRQ(CAN1_RX0_IRQn);
+	MISC_NVIC_SetPriority(CAN2_RX0_IRQn, CAN2_RX0_PREEMPPRIORITY, CAN2_RX0_SUBPRIORITY);
+	MISC_NVIC_EnableIRQ(CAN2_RX0_IRQn);
 }
 
 /**
