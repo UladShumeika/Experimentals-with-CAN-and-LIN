@@ -31,7 +31,7 @@ USH_CAN_filterTypeDef filterConfig = {0};
 //---------------------------------------------------------------------------
 // Static function prototypes
 //---------------------------------------------------------------------------
-static void bxCAN_CAN1_init(void);
+static void bxCAN_CAN2_init(void);
 
 //---------------------------------------------------------------------------
 // FreeRTOS's threads
@@ -47,7 +47,7 @@ void bxCAN_sendMessages(void const *argument)
 	CAN_TxHeaderTypeDef txMessage = {0};
 	const char data[] = "Hello!";
 
-	bxCAN_CAN1_init();
+	bxCAN_CAN2_init();
 
 	txMessage.StdId		= 0x0000U;
 	txMessage.IDE		= CAN_ID_STD;
@@ -85,19 +85,19 @@ void bxCAN_receiveMessages(void const *argument)
   * @param  None.
   * @retval None.
   */
-static void bxCAN_CAN1_init(void)
+static void bxCAN_CAN2_init(void)
 {
 	canInit.CANx						= USE_CAN;
-	canInit.Timings.BaudratePrescaler 	= 5U;
+	canInit.Timings.BaudratePrescaler 	= 25U;
 	canInit.Timings.TimeSegment1 		= CAN_TS1_TQ15;
 	canInit.Timings.TimeSegment2		= CAN_TS2_TQ2;
 	canInit.Timings.ResynchJumpWidth	= CAN_SJW_TQ1;
-	canInit.Mode						= CAN_MODE_NORMAL;
+	canInit.Mode						= CAN_MODE_LOOPBACK;
 	canInit.AutoBusOff					= ENABLE;
 	canInit.AutoWakeUp					= DISABLE;
-	canInit.AutoRetransmission			= ENABLE;
+	canInit.AutoRetransmission			= DISABLE;
 	canInit.ReceiveFifoLocked			= DISABLE;
-	canInit.TransmitFifoPriority		= ENABLE;
+	canInit.TransmitFifoPriority		= DISABLE;
 	CAN_init(&canInit);
 
 	filterConfig.FilterIdHigh			= 0x0000U;
@@ -105,10 +105,11 @@ static void bxCAN_CAN1_init(void)
 	filterConfig.FilterMaskIdHigh		= 0x0000U;
 	filterConfig.FilterMaskIdLow		= 0x0000U;
 	filterConfig.FilterFIFOAssignment	= CAN_FILTER_FIFO_0;
-	filterConfig.FilterBank				= 0U;
+	filterConfig.FilterBank				= 15U;
 	filterConfig.FilterMode				= CAN_FILTER_MODE_IDMASK;
 	filterConfig.FilterScale			= CAN_FILTERSCALE_32BIT;
 	filterConfig.FilterActivation		= CAN_FILTER_ENABLE;
+	filterConfig.SlaveStartFilterBank	= 7U;
 	CAN_filtersConfig(USE_CAN, &filterConfig);
 
 	CAN_enable(USE_CAN);
