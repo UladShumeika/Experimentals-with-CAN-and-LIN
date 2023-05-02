@@ -137,13 +137,15 @@ static USH_peripheryStatus initSystemClock(void)
   */
 static USH_peripheryStatus initSysTick(void)
 {
+	USH_peripheryStatus status = STATUS_OK;
+
 	// Configure the SysTick to have interrupt in 1ms time basis
 	if(SysTick_Config(SystemCoreClock / SYS_TICK_1MS) != 0U)
 	{
-		return STATUS_ERROR;
+		status = STATUS_ERROR;
 	}
 
-	return STATUS_OK;
+	return status;
 }
 
 /**
