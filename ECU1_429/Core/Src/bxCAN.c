@@ -44,7 +44,7 @@ static void bxCAN_CAN1_init(void);
   */
 void bxCAN_sendMessages(void const *argument)
 {
-	CAN_TxHeaderTypeDef txMessage = {0};
+	USH_CAN_txHeaderTypeDef txMessage = {0};
 	const char data[] = "Hello!";
 
 	bxCAN_CAN1_init();
@@ -113,7 +113,7 @@ static void bxCAN_CAN1_init(void)
 
 	CAN_enable(USE_CAN);
 
-	CAN_interruptConfig(USE_CAN, (CAN_IT_TX_MAILBOX_EMPTY | CAN_IT_RX_FIFO0_MSG_PENDING), ENABLE);
+	CAN_interruptEnable(USE_CAN, (CAN_IT_TX_MAILBOX_EMPTY | CAN_IT_RX_FIFO0_MSG_PENDING));
 }
 
 /**

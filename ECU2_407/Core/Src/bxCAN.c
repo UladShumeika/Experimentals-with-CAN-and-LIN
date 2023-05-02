@@ -7,14 +7,14 @@
 //---------------------------------------------------------------------------
 // Defines
 //---------------------------------------------------------------------------
-#define USE_CAN							(CAN1)
+#define USE_CAN							(CAN2)
 
 // CAN1 interrupt priorities
-#define CAN1_TX_PREEMPPRIORITY			(5U)
-#define CAN1_TX_SUBPRIORITY				(0U)
+#define CAN2_TX_PREEMPPRIORITY			(5U)
+#define CAN2_TX_SUBPRIORITY				(0U)
 
-#define CAN1_RX0_PREEMPPRIORITY			(5U)
-#define CAN1_RX0_SUBPRIORITY			(0U)
+#define CAN2_RX0_PREEMPPRIORITY			(5U)
+#define CAN2_RX0_SUBPRIORITY			(0U)
 
 //---------------------------------------------------------------------------
 // Descriptions of FreeRTOS elements
@@ -31,7 +31,7 @@ USH_CAN_filterTypeDef filterConfig = {0};
 //---------------------------------------------------------------------------
 // Static function prototypes
 //---------------------------------------------------------------------------
-static void bxCAN_CAN1_init(void);
+static void bxCAN_CAN2_init(void);
 
 //---------------------------------------------------------------------------
 // FreeRTOS's threads
@@ -44,21 +44,22 @@ static void bxCAN_CAN1_init(void);
   */
 void bxCAN_sendMessages(void const *argument)
 {
-	CAN_TxHeaderTypeDef txMessage = {0};
+	USH_CAN_txHeaderTypeDef txMessage = {0};
 	const char data[] = "Hello!";
 
-	bxCAN_CAN1_init();
+	bxCAN_CAN2_init();
 
-	txMessage.StdId		= 0x0000U;
+	txMessage.StdId		= 0x0001U;
 	txMessage.IDE		= CAN_ID_STD;
 	txMessage.RTR		= CAN_RTR_DATA;
 	txMessage.DLC		= strlen(data);
+
 
 	// Infinite loop
 	for(;;)
 	{
 		CAN_addTxMessage(USE_CAN, &txMessage, (uint8_t*)data);
-		osDelay(100);
+		osDelay(500);
 	}
 }
 
@@ -85,19 +86,19 @@ void bxCAN_receiveMessages(void const *argument)
   * @param  None.
   * @retval None.
   */
-static void bxCAN_CAN1_init(void)
+static void bxCAN_CAN2_init(void)
 {
 	canInit.CANx						= USE_CAN;
-	canInit.Timings.BaudratePrescaler 	= 5U;
+	canInit.Timings.BaudratePrescaler 	= 25U;
 	canInit.Timings.TimeSegment1 		= CAN_TS1_TQ15;
 	canInit.Timings.TimeSegment2		= CAN_TS2_TQ2;
 	canInit.Timings.ResynchJumpWidth	= CAN_SJW_TQ1;
-	canInit.Mode						= CAN_MODE_NORMAL;
+	canInit.Mode						= CAN_MODE_LOOPBACK;
 	canInit.AutoBusOff					= ENABLE;
 	canInit.AutoWakeUp					= DISABLE;
-	canInit.AutoRetransmission			= ENABLE;
+	canInit.AutoRetransmission			= DISABLE;
 	canInit.ReceiveFifoLocked			= DISABLE;
-	canInit.TransmitFifoPriority		= ENABLE;
+	canInit.TransmitFifoPriority		= DISABLE;
 	CAN_init(&canInit);
 
 	filterConfig.FilterIdHigh			= 0x0000U;
@@ -105,15 +106,16 @@ static void bxCAN_CAN1_init(void)
 	filterConfig.FilterMaskIdHigh		= 0x0000U;
 	filterConfig.FilterMaskIdLow		= 0x0000U;
 	filterConfig.FilterFIFOAssignment	= CAN_FILTER_FIFO_0;
-	filterConfig.FilterBank				= 0U;
+	filterConfig.FilterBank				= 15U;
 	filterConfig.FilterMode				= CAN_FILTER_MODE_IDMASK;
 	filterConfig.FilterScale			= CAN_FILTERSCALE_32BIT;
 	filterConfig.FilterActivation		= CAN_FILTER_ENABLE;
+	filterConfig.SlaveStartFilterBank	= 7U;
 	CAN_filtersConfig(USE_CAN, &filterConfig);
 
 	CAN_enable(USE_CAN);
 
-	CAN_interruptConfig(USE_CAN, (CAN_IT_TX_MAILBOX_EMPTY | CAN_IT_RX_FIFO0_MSG_PENDING), ENABLE);
+	CAN_interruptEnable(USE_CAN, (CAN_IT_TX_MAILBOX_EMPTY | CAN_IT_RX_FIFO0_MSG_PENDING));
 }
 
 /**
@@ -124,11 +126,11 @@ static void bxCAN_CAN1_init(void)
  */
 void CAN_initGlobalInterrupts(void)
 {
-	MISC_NVIC_SetPriority(CAN1_TX_IRQn, CAN1_TX_PREEMPPRIORITY, CAN1_TX_SUBPRIORITY);
-	MISC_NVIC_EnableIRQ(CAN1_TX_IRQn);
+	MISC_NVIC_SetPriority(CAN2_TX_IRQn, CAN2_TX_PREEMPPRIORITY, CAN2_TX_SUBPRIORITY);
+	MISC_NVIC_EnableIRQ(CAN2_TX_IRQn);
 
-	MISC_NVIC_SetPriority(CAN1_RX0_IRQn, CAN1_RX0_PREEMPPRIORITY, CAN1_RX0_SUBPRIORITY);
-	MISC_NVIC_EnableIRQ(CAN1_RX0_IRQn);
+	MISC_NVIC_SetPriority(CAN2_RX0_IRQn, CAN2_RX0_PREEMPPRIORITY, CAN2_RX0_SUBPRIORITY);
+	MISC_NVIC_EnableIRQ(CAN2_RX0_IRQn);
 }
 
 /**
@@ -146,4 +148,32 @@ void bxCAN_freeRtosInit(void)
 	// definition and creation of the receiving messages thread
 	osThreadDef(receiveMessages, bxCAN_receiveMessages, osPriorityLow, 0, 128);
 	receiveMessagesHandle = osThreadCreate(osThread(receiveMessages), NULL);
+}
+
+//---------------------------------------------------------------------------
+// Callbacks
+//---------------------------------------------------------------------------
+
+/**
+  * @brief  FIFO 0 message pending callback.
+  * @note	This function should not be modified, when the callback is needed,
+  * 		the CAN_rxFifo0MsgPendingCallback could be implemented in the user file.
+  * @param  can - A pointer to CAN peripheral to be used where x is 1 or 2.
+  * @retval None.
+  */
+void CAN_rxFifo0MsgPendingCallback(CAN_TypeDef* can)
+{
+
+}
+
+/**
+  * @brief  TX mailbox 0 complete callback.
+  * @note	This function should not be modified, when the callback is needed,
+  * 		the CAN_txMailbox0CompleteCallback could be implemented in the user file.
+  * @param  can - A pointer to CAN peripheral to be used where x is 1 or 2.
+  * @retval None.
+  */
+void CAN_txMailbox0CompleteCallback(CAN_TypeDef* can)
+{
+
 }
