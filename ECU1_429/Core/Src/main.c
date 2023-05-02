@@ -77,55 +77,75 @@ static USH_peripheryStatus initSystemClock(void)
 	// Enable HSE oscillator
 	status = RCC_initHSE();
 
-	// Configure PLL
-	pllInitStructure.PLL_source 	= RCC_PLLSOURCE_HSE;
-	pllInitStructure.PLLM 			= 4U;
-	pllInitStructure.PLLN 			= 180U;
-	pllInitStructure.PLLP 			= 2U;
-	pllInitStructure.PLLQ 			= 4U;
-	status = RCC_initPLL(&pllInitStructure);
-
-	// Activate the Over-Drive mode
-	PWR->CR |= PWR_CR_ODEN;
-
-	// Wait till the Over-Drive mode is enabled
-	ticksStart = MISC_timeoutGetTick();
-	while(!MISC_PWR_getFlagStatus(PWR_FLAG_ODRDY))
+	if(status == STATUS_OK)
 	{
-		if((MISC_timeoutGetTick() - ticksStart) > PWR_OVERDRIVE_TIMEOUT)
+		// Configure PLL
+		pllInitStructure.PLL_source 	= RCC_PLLSOURCE_HSE;
+		pllInitStructure.PLLM 			= 4U;
+		pllInitStructure.PLLN 			= 180U;
+		pllInitStructure.PLLP 			= 2U;
+		pllInitStructure.PLLQ 			= 4U;
+		status = RCC_initPLL(&pllInitStructure);
+	}
+
+	if(status == STATUS_OK)
+	{
+		// Activate the Over-Drive mode
+		PWR->CR |= PWR_CR_ODEN;
+
+		// Wait till the Over-Drive mode is enabled
+		ticksStart = MISC_timeoutGetTick();
+		while(!MISC_PWR_getFlagStatus(PWR_FLAG_ODRDY))
 		{
-			return STATUS_TIMEOUT;
+			if((MISC_timeoutGetTick() - ticksStart) > PWR_OVERDRIVE_TIMEOUT)
+			{
+				status = STATUS_TIMEOUT;
+				break;
+			}
 		}
 	}
 
-	// Activate the Over-Drive switching
-	PWR->CR |= PWR_CR_ODSWEN;
-
-	// Wait till the Over-Drive switching is enabled
-	while(!MISC_PWR_getFlagStatus(PWR_FLAG_ODSWRDY))
+	if(status == STATUS_OK)
 	{
-		if((MISC_timeoutGetTick() - ticksStart) > PWR_OVERDRIVE_TIMEOUT)
+		// Activate the Over-Drive switching
+		PWR->CR |= PWR_CR_ODSWEN;
+
+		// Wait till the Over-Drive switching is enabled
+		while(!MISC_PWR_getFlagStatus(PWR_FLAG_ODSWRDY))
 		{
-			return STATUS_TIMEOUT;
+			if((MISC_timeoutGetTick() - ticksStart) > PWR_OVERDRIVE_TIMEOUT)
+			{
+				status = STATUS_TIMEOUT;
+				break;
+			}
 		}
 	}
 
-	// Configure FLASH LATENCY
-	MISC_FLASH_setLatency(FLASH_LATENCY_5);
-	if((FLASH->ACR & FLASH_ACR_LATENCY) != FLASH_LATENCY_5) return STATUS_ERROR;
+	if(status == STATUS_OK)
+	{
+		// Configure FLASH LATENCY
+		MISC_FLASH_setLatency(FLASH_LATENCY_5);
+		if((FLASH->ACR & FLASH_ACR_LATENCY) != FLASH_LATENCY_5) status = STATUS_ERROR;
+	}
 
-	// Configure SYSCLK, HCLK and PCLKs
-	clksInitStructure.SYSCLK_source		= RCC_SYSCLKSOURCE_PLL;
-	clksInitStructure.HCLK_divider  	= RCC_SYSCLK_DIVIDER_1;
-	clksInitStructure.APB1_divider  	= RCC_HCLK_DIVIDER_4;
-	clksInitStructure.APB2_divider 		= RCC_HCLK_DIVIDER_2;
-	status = RCC_initClocks(&clksInitStructure);
+	if(status == STATUS_OK)
+	{
+		// Configure SYSCLK, HCLK and PCLKs
+		clksInitStructure.SYSCLK_source		= RCC_SYSCLKSOURCE_PLL;
+		clksInitStructure.HCLK_divider  	= RCC_SYSCLK_DIVIDER_1;
+		clksInitStructure.APB1_divider  	= RCC_HCLK_DIVIDER_4;
+		clksInitStructure.APB2_divider 		= RCC_HCLK_DIVIDER_2;
+		status = RCC_initClocks(&clksInitStructure);
+	}
 
-	// Update the global variable SystemCoreClock
-	SystemCoreClockUpdate();
+	if(status == STATUS_OK)
+	{
+		// Update the global variable SystemCoreClock
+		SystemCoreClockUpdate();
 
-	// Update timeout timer
-	MISC_timeoutTimerInit();
+		// Update timeout timer
+		MISC_timeoutTimerInit();
+	}
 
 	return status;
 }
@@ -137,13 +157,15 @@ static USH_peripheryStatus initSystemClock(void)
   */
 static USH_peripheryStatus initSysTick(void)
 {
+	USH_peripheryStatus status = STATUS_OK;
+
 	// Configure the SysTick to have interrupt in 1ms time basis
 	if(SysTick_Config(SystemCoreClock / SYS_TICK_1MS) != 0U)
 	{
-		return STATUS_ERROR;
+		status = STATUS_ERROR;
 	}
 
-	return STATUS_OK;
+	return status;
 }
 
 /**
