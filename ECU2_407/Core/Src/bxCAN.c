@@ -44,21 +44,21 @@ static void bxCAN_CAN2_init(void);
   */
 void bxCAN_sendMessages(void const *argument)
 {
-	//CAN_TxHeaderTypeDef txMessage = {0};
+	USH_CAN_txHeaderTypeDef txMessage = {0};
 	const char data[] = "Hello!";
 
 	bxCAN_CAN2_init();
 
-//	txMessage.StdId		= 0x0001U;
-//	txMessage.IDE		= CAN_ID_STD;
-//	txMessage.RTR		= CAN_RTR_DATA;
-//	txMessage.DLC		= strlen(data);
+	txMessage.StdId		= 0x0001U;
+	txMessage.IDE		= CAN_ID_STD;
+	txMessage.RTR		= CAN_RTR_DATA;
+	txMessage.DLC		= strlen(data);
 
 
 	// Infinite loop
 	for(;;)
 	{
-		//CAN_addTxMessage(USE_CAN, &txMessage, (uint8_t*)data);
+		CAN_addTxMessage(USE_CAN, &txMessage, (uint8_t*)data);
 		osDelay(500);
 	}
 }
@@ -115,7 +115,7 @@ static void bxCAN_CAN2_init(void)
 
 	CAN_enable(USE_CAN);
 
-	//CAN_interruptConfig(USE_CAN, (CAN_IT_TX_MAILBOX_EMPTY | CAN_IT_RX_FIFO0_MSG_PENDING), ENABLE);
+	CAN_interruptEnable(USE_CAN, (CAN_IT_TX_MAILBOX_EMPTY | CAN_IT_RX_FIFO0_MSG_PENDING));
 }
 
 /**
