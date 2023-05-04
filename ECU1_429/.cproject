@@ -49,6 +49,7 @@
 									<listOptionValue builtIn="false" value="../Drivers/CMSIS/Device"/>
 									<listOptionValue builtIn="false" value="../Drivers/STM32F4xx_customLibrary"/>
 									<listOptionValue builtIn="false" value="../Drivers/STM32F4xx_customLibrary/Inc"/>
+									<listOptionValue builtIn="false" value="../Drivers/SAE_J1939/Binding_APIs/Inc"/>
 									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS"/>
 									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/FreeRTOS/Source/include"/>
 									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F"/>
@@ -130,6 +131,7 @@
 									<listOptionValue builtIn="false" value="C:/Users/wlads/STM32Cube/Repository/STM32Cube_FW_F4_V1.27.1/Drivers/CMSIS/Include"/>
 									<listOptionValue builtIn="false" value="../Drivers/CMSIS/Core_cm"/>
 									<listOptionValue builtIn="false" value="../Drivers/CMSIS/Device"/>
+									<listOptionValue builtIn="false" value="/ECU1_429/Drivers/SAE_J1939/Binding_APIs/Inc"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.1607007506" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>
@@ -179,5 +181,12 @@
 		</scannerConfigBuildInfo>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
-	<storageModule moduleId="refreshScope"/>
+	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="Debug">
+			<resource resourceType="PROJECT" workspacePath="/ECU1_429"/>
+		</configuration>
+		<configuration configurationName="Release">
+			<resource resourceType="PROJECT" workspacePath="/ECU1_429"/>
+		</configuration>
+	</storageModule>
 </cproject>
