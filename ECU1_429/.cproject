@@ -49,7 +49,9 @@
 									<listOptionValue builtIn="false" value="../Drivers/CMSIS/Device"/>
 									<listOptionValue builtIn="false" value="../Drivers/STM32F4xx_customLibrary"/>
 									<listOptionValue builtIn="false" value="../Drivers/STM32F4xx_customLibrary/Inc"/>
-									<listOptionValue builtIn="false" value="../Drivers/SAE_J1939/Binding_APIs/Inc"/>
+									<listOptionValue builtIn="false" value="../Drivers/SAE_J1939/SAE_J1939_Binding_APIs/Inc"/>
+									<listOptionValue builtIn="false" value="../Drivers/SAE_J1939/SAE_J1939_21_Transport_Layer/Inc"/>
+									<listOptionValue builtIn="false" value="../Drivers/SAE_J1939/SAE_J1939_81_Network_Management/Inc"/>
 									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS"/>
 									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/FreeRTOS/Source/include"/>
 									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F"/>
@@ -125,13 +127,16 @@
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.includepaths.1380639136" name="Include paths (-I)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.includepaths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="../Core/Inc"/>
-									<listOptionValue builtIn="false" value="C:/Users/wlads/STM32Cube/Repository/STM32Cube_FW_F4_V1.27.1/Drivers/STM32F4xx_HAL_Driver/Inc"/>
-									<listOptionValue builtIn="false" value="C:/Users/wlads/STM32Cube/Repository/STM32Cube_FW_F4_V1.27.1/Drivers/STM32F4xx_HAL_Driver/Inc/Legacy"/>
-									<listOptionValue builtIn="false" value="C:/Users/wlads/STM32Cube/Repository/STM32Cube_FW_F4_V1.27.1/Drivers/CMSIS/Device/ST/STM32F4xx/Include"/>
-									<listOptionValue builtIn="false" value="C:/Users/wlads/STM32Cube/Repository/STM32Cube_FW_F4_V1.27.1/Drivers/CMSIS/Include"/>
 									<listOptionValue builtIn="false" value="../Drivers/CMSIS/Core_cm"/>
 									<listOptionValue builtIn="false" value="../Drivers/CMSIS/Device"/>
-									<listOptionValue builtIn="false" value="/ECU1_429/Drivers/SAE_J1939/Binding_APIs/Inc"/>
+									<listOptionValue builtIn="false" value="../Drivers/STM32F4xx_customLibrary"/>
+									<listOptionValue builtIn="false" value="../Drivers/STM32F4xx_customLibrary/Inc"/>
+									<listOptionValue builtIn="false" value="../Drivers/SAE_J1939/SAE_J1939_Binding_APIs/Inc"/>
+									<listOptionValue builtIn="false" value="../Drivers/SAE_J1939/SAE_J1939_21_Transport_Layer/Inc"/>
+									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS"/>
+									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/FreeRTOS/Source/include"/>
+									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F"/>
+									<listOptionValue builtIn="false" value="../Drivers/SAE_J1939/SAE_J1939_81_Network_Management/Inc"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.1607007506" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>
