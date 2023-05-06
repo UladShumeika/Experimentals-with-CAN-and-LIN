@@ -22,17 +22,13 @@
 //---------------------------------------------------------------------------
 static osThreadId bxCAN_stateMachineHandle;
 static osThreadId receiveMessagesHandle;
+static osSemaphoreId receiveMessagesSemHandle;
 
 //---------------------------------------------------------------------------
 // Structure definitions
 //---------------------------------------------------------------------------
 USH_CAN_settingsTypeDef canInit = {0};
 USH_CAN_filterTypeDef filterConfig = {0};
-
-//---------------------------------------------------------------------------
-// Static function prototypes
-//---------------------------------------------------------------------------
-static void bxCAN_CAN1_init(void);
 
 //---------------------------------------------------------------------------
 // FreeRTOS's threads
@@ -147,6 +143,11 @@ void bxCAN_freeRtosInit(void)
 	// definition and creation of the receiving messages thread
 	osThreadDef(receiveMessages, bxCAN_receiveMessages, osPriorityLow, 0, 128);
 	receiveMessagesHandle = osThreadCreate(osThread(receiveMessages), NULL);
+
+	// Create the semaphore(s)
+	// definition and creation of the receive messages semaphore
+	osSemaphoreDef(receiveMessagesSem);
+	receiveMessagesSemHandle = osSemaphoreCreate(osSemaphore(receiveMessagesSem), 1);
 }
 
 //---------------------------------------------------------------------------
