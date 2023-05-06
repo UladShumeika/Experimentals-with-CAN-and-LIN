@@ -147,3 +147,22 @@ void bxCAN_freeRtosInit(void)
 	osThreadDef(receiveMessages, bxCAN_receiveMessages, osPriorityLow, 0, 128);
 	receiveMessagesHandle = osThreadCreate(osThread(receiveMessages), NULL);
 }
+
+//---------------------------------------------------------------------------
+// Callback functions
+//---------------------------------------------------------------------------
+
+/**
+  * @brief  FIFO 0 message pending callback.
+  * @note	This function should not be modified, when the callback is needed,
+  * 		the CAN_rxFifo0MsgPendingCallback could be implemented in the user file.
+  * @param  can - A pointer to CAN peripheral to be used where x is 1 or 2.
+  * @retval None.
+  */
+void CAN_rxFifo0MsgPendingCallback(CAN_TypeDef* can)
+{
+	if(can == USE_CAN)
+	{
+
+	}
+}
