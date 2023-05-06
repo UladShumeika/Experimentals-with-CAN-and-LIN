@@ -20,7 +20,7 @@
 //---------------------------------------------------------------------------
 // Descriptions of FreeRTOS elements
 //---------------------------------------------------------------------------
-static osThreadId sendMessagesHandle;
+static osThreadId bxCAN_stateMachineHandle;
 static osThreadId receiveMessagesHandle;
 
 //---------------------------------------------------------------------------
@@ -39,11 +39,11 @@ static void bxCAN_CAN1_init(void);
 //---------------------------------------------------------------------------
 
 /**
-  * @brief 	Function implementing the sending messages thread.
+  * @brief 	Function implementing the J1939 state machine thread.
   * @param	argument - Not used.
   * @retval	None.
   */
-void bxCAN_sendMessages(void const *argument)
+void bxCAN_stateMachine(void const *argument)
 {
 	USH_CAN_txHeaderTypeDef txMessage = {0};
 	const char data[] = "Hello!";
@@ -140,9 +140,9 @@ void CAN_initGlobalInterrupts(void)
 void bxCAN_freeRtosInit(void)
 {
 	// Create the thread(s)
-	// definition and creation of the sending messages thread
-	osThreadDef(sendMessages, bxCAN_sendMessages, osPriorityLow, 0, 128);
-	sendMessagesHandle = osThreadCreate(osThread(sendMessages), NULL);
+	// definition and creation of the J1939 state machine thread
+	osThreadDef(stateMachine, bxCAN_stateMachine, osPriorityLow, 0, 128);
+	bxCAN_stateMachineHandle = osThreadCreate(osThread(stateMachine), NULL);
 
 	// definition and creation of the receiving messages thread
 	osThreadDef(receiveMessages, bxCAN_receiveMessages, osPriorityLow, 0, 128);
