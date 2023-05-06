@@ -41,21 +41,12 @@ USH_CAN_filterTypeDef filterConfig = {0};
   */
 void bxCAN_stateMachine(void const *argument)
 {
-	USH_CAN_txHeaderTypeDef txMessage = {0};
-	const char data[] = "Hello!";
-
-	bxCAN_CAN1_init();
-
-	txMessage.StdId		= 0x0000U;
-	txMessage.IDE		= CAN_ID_STD;
-	txMessage.RTR		= CAN_RTR_DATA;
-	txMessage.DLC		= strlen(data);
 
 	// Infinite loop
 	for(;;)
 	{
-		CAN_addTxMessage(USE_CAN, &txMessage, (uint8_t*)data);
-		osDelay(100);
+		J1939_stateMachine();
+		osDelay(10);
 	}
 }
 
