@@ -73,7 +73,7 @@ void bxCAN_receiveMessages(void const *argument)
   * @param  None.
   * @retval None.
   */
-static void bxCAN_CAN1_init(void)
+void J1939_initCAN(void)
 {
 	canInit.CANx						= USE_CAN;
 	canInit.Timings.BaudratePrescaler 	= 5U;
