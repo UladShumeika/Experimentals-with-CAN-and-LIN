@@ -89,14 +89,14 @@ void bxCAN_receiveMessages(void const *argument)
 static void bxCAN_CAN2_init(void)
 {
 	canInit.CANx						= USE_CAN;
-	canInit.Timings.BaudratePrescaler 	= 25U;
-	canInit.Timings.TimeSegment1 		= CAN_TS1_TQ15;
+	canInit.Timings.BaudratePrescaler 	= 12U;
+	canInit.Timings.TimeSegment1 		= CAN_TS1_TQ11;
 	canInit.Timings.TimeSegment2		= CAN_TS2_TQ2;
 	canInit.Timings.ResynchJumpWidth	= CAN_SJW_TQ1;
-	canInit.Mode						= CAN_MODE_LOOPBACK;
+	canInit.Mode						= CAN_MODE_NORMAL;
 	canInit.AutoBusOff					= ENABLE;
 	canInit.AutoWakeUp					= DISABLE;
-	canInit.AutoRetransmission			= DISABLE;
+	canInit.AutoRetransmission			= ENABLE;
 	canInit.ReceiveFifoLocked			= DISABLE;
 	canInit.TransmitFifoPriority		= DISABLE;
 	CAN_init(&canInit);
