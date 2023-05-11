@@ -147,7 +147,7 @@ void J1939_messagesProcessing(void)
 void bxCAN_init(void)
 {
 	canInit.CANx						= USE_CAN;
-	canInit.Timings.BaudratePrescaler 	= 5U;
+	canInit.Timings.BaudratePrescaler 	= 10U;
 	canInit.Timings.TimeSegment1 		= CAN_TS1_TQ15;
 	canInit.Timings.TimeSegment2		= CAN_TS2_TQ2;
 	canInit.Timings.ResynchJumpWidth	= CAN_SJW_TQ1;
