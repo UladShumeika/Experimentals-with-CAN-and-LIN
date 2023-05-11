@@ -20,7 +20,7 @@
 //---------------------------------------------------------------------------
 // Descriptions of FreeRTOS elements
 //---------------------------------------------------------------------------
-static osThreadId bxCAN_stateMachineHandle;
+static osThreadId sendMessagesHandle;
 static osThreadId receiveMessagesHandle;
 static osSemaphoreId receiveMessagesSemHandle;
 
@@ -35,27 +35,28 @@ USH_CAN_filterTypeDef filterConfig = {0};
 //---------------------------------------------------------------------------
 
 /**
-  * @brief 	Function implementing the J1939 state machine thread.
-  * @param	argument - Not used.
-  * @retval	None.
-  */
-void bxCAN_stateMachine(void const *argument)
-{
-
-	// Infinite loop
-	for(;;)
-	{
-		J1939_stateMachine();
-		osDelay(10);
-	}
-}
-
-/**
   * @brief 	Function implementing the receiving messages thread.
   * @param	argument - Not used.
   * @retval	None.
   */
 void bxCAN_receiveMessages(void const *argument)
+{
+	J1939_initCAN();
+
+	// Infinite loop
+	for(;;)
+	{
+		osSemaphoreWait(receiveMessagesSemHandle, osWaitForever);
+
+	}
+}
+
+/**
+  * @brief 	Function implementing the sending messages thread.
+  * @param	argument - Not used.
+  * @retval	None.
+  */
+void bxCAN_sendMessages(void const *argument)
 {
 	// Infinite loop
 	for(;;)
@@ -127,9 +128,9 @@ void CAN_initGlobalInterrupts(void)
 void bxCAN_freeRtosInit(void)
 {
 	// Create the thread(s)
-	// definition and creation of the J1939 state machine thread
-	osThreadDef(stateMachine, bxCAN_stateMachine, osPriorityLow, 0, 128);
-	bxCAN_stateMachineHandle = osThreadCreate(osThread(stateMachine), NULL);
+	// definition and creation of the sending messages thread
+	osThreadDef(sendMessages, bxCAN_sendMessages, osPriorityLow, 0, 128);
+	sendMessagesHandle = osThreadCreate(osThread(sendMessages), NULL);
 
 	// definition and creation of the receiving messages thread
 	osThreadDef(receiveMessages, bxCAN_receiveMessages, osPriorityLow, 0, 128);
@@ -139,6 +140,7 @@ void bxCAN_freeRtosInit(void)
 	// definition and creation of the receive messages semaphore
 	osSemaphoreDef(receiveMessagesSem);
 	receiveMessagesSemHandle = osSemaphoreCreate(osSemaphore(receiveMessagesSem), 1);
+
 }
 
 //---------------------------------------------------------------------------
