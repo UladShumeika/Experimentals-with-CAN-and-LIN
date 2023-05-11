@@ -23,6 +23,7 @@
 static osThreadId sendMessagesHandle;
 static osThreadId receiveMessagesHandle;
 static osSemaphoreId receiveMessagesSemHandle;
+static osTimerId timeoutTimerHandle;
 
 //---------------------------------------------------------------------------
 // Structure definitions
@@ -63,6 +64,16 @@ void bxCAN_sendMessages(void const *argument)
 	{
 		osDelay(1);
 	}
+}
+
+/**
+  * @brief 	Function implementing the timer callback
+  * @param	argument - Not used.
+  * @retval	None.
+  */
+void timeoutTimer_Callback(void const *argument)
+{
+
 }
 
 //---------------------------------------------------------------------------
@@ -141,6 +152,10 @@ void bxCAN_freeRtosInit(void)
 	osSemaphoreDef(receiveMessagesSem);
 	receiveMessagesSemHandle = osSemaphoreCreate(osSemaphore(receiveMessagesSem), 1);
 
+	// Create the timer(s)
+	// definition and creation of the timeout timer for J1939 TP messages
+	osTimerDef(Timeout, timeoutTimer_Callback);
+	timeoutTimerHandle = osTimerCreate(osTimer(Timeout), osTimerOnce, NULL);
 }
 
 //---------------------------------------------------------------------------

@@ -15,5 +15,6 @@
 void bxCAN_freeRtosInit(void);
 void bxCAN_sendMessages(void const *argument);
 void bxCAN_receiveMessages(void const *argument);
+void timeoutTimer_Callback(void const *argument);
 
 #endif /* __CAN_H */
