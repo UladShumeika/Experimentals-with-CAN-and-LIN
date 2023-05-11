@@ -232,6 +232,8 @@ void CAN_rxFifo0MsgPendingCallback(CAN_TypeDef* can)
 {
 	if(can == USE_CAN)
 	{
+		CAN_interruptDisable(USE_CAN, CAN_IT_RX_FIFO0_MSG_PENDING);
 
+		osSemaphoreRelease(receiveMessagesSemHandle);
 	}
 }
