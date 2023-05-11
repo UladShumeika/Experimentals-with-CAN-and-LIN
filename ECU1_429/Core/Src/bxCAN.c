@@ -57,6 +57,10 @@ void bxCAN_receiveMessages(void const *argument)
 	{
 		osSemaphoreWait(receiveMessagesSemHandle, osWaitForever);
 
+		if(J1939_state != J1939_STATE_UNINIT)
+		{
+			J1939_messagesProcessing();
+		}
 	}
 }
 
@@ -173,6 +177,8 @@ void bxCAN_init(void)
 	CAN_enable(USE_CAN);
 
 	CAN_interruptEnable(USE_CAN, (CAN_IT_TX_MAILBOX_EMPTY | CAN_IT_RX_FIFO0_MSG_PENDING));
+
+	J1939_state = J1939_STATE_NORMAL;
 }
 
 /**
