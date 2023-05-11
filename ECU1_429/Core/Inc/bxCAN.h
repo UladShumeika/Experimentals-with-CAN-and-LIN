@@ -30,7 +30,7 @@ typedef enum
 // External function prototypes
 //---------------------------------------------------------------------------
 void bxCAN_freeRtosInit(void);
-void J1939_initCAN(void);
+void bxCAN_init(void);
 void bxCAN_sendMessages(void const *argument);
 void bxCAN_receiveMessages(void const *argument);
 void timeoutTimer_Callback(void const *argument);

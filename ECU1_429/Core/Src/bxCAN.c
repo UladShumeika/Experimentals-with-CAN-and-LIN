@@ -50,7 +50,7 @@ static J1939_states J1939_state = J1939_STATE_UNINIT;
   */
 void bxCAN_receiveMessages(void const *argument)
 {
-	J1939_initCAN();
+	bxCAN_init();
 
 	// Infinite loop
 	for(;;)
@@ -144,7 +144,7 @@ void J1939_messagesProcessing(void)
   * @param  None.
   * @retval None.
   */
-void J1939_initCAN(void)
+void bxCAN_init(void)
 {
 	canInit.CANx						= USE_CAN;
 	canInit.Timings.BaudratePrescaler 	= 5U;
