@@ -34,5 +34,6 @@ void J1939_initCAN(void);
 void bxCAN_sendMessages(void const *argument);
 void bxCAN_receiveMessages(void const *argument);
 void timeoutTimer_Callback(void const *argument);
+void J1939_messagesProcessing(void);
 
 #endif /* __CAN_H */
