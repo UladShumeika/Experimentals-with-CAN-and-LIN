@@ -26,6 +26,18 @@ typedef enum
 	J1939_STATE_TP_SENDING_PEER_TO_PEER
 } J1939_states;
 
+/**
+ * @brief SAE J1939 notification types enumeration.
+ */
+typedef enum
+{
+	J1939_NOTIFICATION_TP_CM_Abort,
+	J1939_NOTIFICATION_TP_CM_BAM,
+	J1939_NOTIFICATION_TP_CM_EndOfMsgACK,
+	J1939_NOTIFICATION_TP_CM_CTS,
+	J1939_NOTIFICATION_TP_CM_RTS
+} J1939_notificationsTypes;
+
 //---------------------------------------------------------------------------
 // External function prototypes
 //---------------------------------------------------------------------------
