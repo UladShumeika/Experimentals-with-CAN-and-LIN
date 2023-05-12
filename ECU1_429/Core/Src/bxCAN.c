@@ -20,6 +20,8 @@
 #define J1939_MESSAGE_PACKET_FREQ		(125U) // from 50 to 200 ms
 #define J1939_MESSAGE_TIMEOUT			(750U)
 
+#define ULONG_MAX						(0xFFFFFFFFUL)
+
 //---------------------------------------------------------------------------
 // Descriptions of FreeRTOS elements
 //---------------------------------------------------------------------------
@@ -71,10 +73,38 @@ void bxCAN_receiveMessages(void const *argument)
   */
 void bxCAN_sendMessages(void const *argument)
 {
+	uint32_t notifiedValue;
+
 	// Infinite loop
 	for(;;)
 	{
-		osDelay(1);
+		xTaskNotifyWait(0, ULONG_MAX, &notifiedValue, osWaitForever);
+
+		switch(notifiedValue)
+		{
+			case J1939_NOTIFICATION_TP_CM_Abort:
+				// send Abort
+				break;
+
+			case J1939_NOTIFICATION_TP_CM_BAM:
+				// send BAM
+				break;
+
+			case J1939_NOTIFICATION_TP_CM_CTS:
+				// send CTS
+				break;
+
+			case J1939_NOTIFICATION_TP_CM_RTS:
+				// send RTS
+				break;
+
+			case J1939_NOTIFICATION_TP_CM_EndOfMsgACK:
+				// send END
+				break;
+
+			default:
+				break;
+		}
 	}
 }
 
