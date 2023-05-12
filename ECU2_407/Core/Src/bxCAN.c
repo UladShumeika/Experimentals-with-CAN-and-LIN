@@ -2,6 +2,7 @@
 // Includes
 //---------------------------------------------------------------------------
 #include "bxCAN.h"
+#include <limits.h>
 #include <string.h>
 
 //---------------------------------------------------------------------------
@@ -35,33 +36,13 @@ USH_CAN_filterTypeDef filterConfig = {0};
 static void bxCAN_init(void);
 
 //---------------------------------------------------------------------------
+// Variables
+//---------------------------------------------------------------------------
+static J1939_states J1939_state = J1939_STATE_UNINIT;
+
+//---------------------------------------------------------------------------
 // FreeRTOS's threads
 //---------------------------------------------------------------------------
-
-/**
-  * @brief 	Function implementing the sending messages thread.
-  * @param	argument - Not used.
-  * @retval	None.
-  */
-void bxCAN_sendMessages(void const *argument)
-{
-	USH_CAN_txHeaderTypeDef txMessage = {0};
-	const char data[] = "Hello!";
-
-
-	txMessage.StdId		= 0x0001U;
-	txMessage.IDE		= CAN_ID_STD;
-	txMessage.RTR		= CAN_RTR_DATA;
-	txMessage.DLC		= strlen(data);
-
-
-	// Infinite loop
-	for(;;)
-	{
-		CAN_addTxMessage(USE_CAN, &txMessage, (uint8_t*)data);
-		osDelay(500);
-	}
-}
 
 /**
   * @brief 	Function implementing the receiving messages thread.
@@ -70,10 +51,58 @@ void bxCAN_sendMessages(void const *argument)
   */
 void bxCAN_receiveMessages(void const *argument)
 {
+	bxCAN_init();
+
 	// Infinite loop
 	for(;;)
 	{
-		osDelay(1);
+		//osSemaphoreWait(receiveMessagesSemHandle, osWaitForever);
+
+		if(J1939_state != J1939_STATE_UNINIT)
+		{
+		}
+	}
+}
+
+/**
+  * @brief 	Function implementing the sending messages thread.
+  * @param	argument - Not used.
+  * @retval	None.
+  */
+void bxCAN_sendMessages(void const *argument)
+{
+	uint32_t notifiedValue;
+
+	// Infinite loop
+	for(;;)
+	{
+		xTaskNotifyWait(0, ULONG_MAX, &notifiedValue, osWaitForever);
+
+		switch(notifiedValue)
+		{
+			case J1939_NOTIFICATION_TP_CM_Abort:
+				// send Abort
+				break;
+
+			case J1939_NOTIFICATION_TP_CM_BAM:
+				// send BAM
+				break;
+
+			case J1939_NOTIFICATION_TP_CM_CTS:
+				// send CTS
+				break;
+
+			case J1939_NOTIFICATION_TP_CM_RTS:
+				// send RTS
+				break;
+
+			case J1939_NOTIFICATION_TP_CM_EndOfMsgACK:
+				// send END
+				break;
+
+			default:
+				break;
+		}
 	}
 }
 
