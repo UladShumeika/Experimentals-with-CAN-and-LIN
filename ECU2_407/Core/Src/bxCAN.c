@@ -56,7 +56,7 @@ void bxCAN_receiveMessages(void const *argument)
 	// Infinite loop
 	for(;;)
 	{
-		//osSemaphoreWait(receiveMessagesSemHandle, osWaitForever);
+		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
 		if(J1939_state != J1939_STATE_UNINIT)
 		{
@@ -180,7 +180,7 @@ void bxCAN_freeRtosInit(void)
 }
 
 //---------------------------------------------------------------------------
-// Callbacks
+// Callback functions
 //---------------------------------------------------------------------------
 
 /**
@@ -192,7 +192,16 @@ void bxCAN_freeRtosInit(void)
   */
 void CAN_rxFifo0MsgPendingCallback(CAN_TypeDef* can)
 {
+	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
+	if(can == USE_CAN)
+	{
+		CAN_interruptDisable(USE_CAN, CAN_IT_RX_FIFO0_MSG_PENDING);
+
+		vTaskNotifyGiveFromISR(receiveMessagesHandle, &xHigherPriorityTaskWoken);
+
+		portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+	}
 }
 
 /**
