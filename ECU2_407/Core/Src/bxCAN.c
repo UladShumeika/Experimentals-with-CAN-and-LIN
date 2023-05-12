@@ -31,7 +31,7 @@ USH_CAN_filterTypeDef filterConfig = {0};
 //---------------------------------------------------------------------------
 // Static function prototypes
 //---------------------------------------------------------------------------
-static void bxCAN_CAN2_init(void);
+static void bxCAN_init(void);
 
 //---------------------------------------------------------------------------
 // FreeRTOS's threads
@@ -47,7 +47,6 @@ void bxCAN_sendMessages(void const *argument)
 	USH_CAN_txHeaderTypeDef txMessage = {0};
 	const char data[] = "Hello!";
 
-	bxCAN_CAN2_init();
 
 	txMessage.StdId		= 0x0001U;
 	txMessage.IDE		= CAN_ID_STD;
@@ -86,7 +85,7 @@ void bxCAN_receiveMessages(void const *argument)
   * @param  None.
   * @retval None.
   */
-static void bxCAN_CAN2_init(void)
+static void bxCAN_init(void)
 {
 	canInit.CANx						= USE_CAN;
 	canInit.Timings.BaudratePrescaler 	= 12U;
