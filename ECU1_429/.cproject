@@ -130,12 +130,11 @@
 									<listOptionValue builtIn="false" value="../Drivers/CMSIS/Device"/>
 									<listOptionValue builtIn="false" value="../Drivers/STM32F4xx_customLibrary"/>
 									<listOptionValue builtIn="false" value="../Drivers/STM32F4xx_customLibrary/Inc"/>
-									<listOptionValue builtIn="false" value="../Drivers/SAE_J1939/SAE_J1939_Binding_APIs/Inc"/>
 									<listOptionValue builtIn="false" value="../Drivers/SAE_J1939/SAE_J1939_21_Transport_Layer/Inc"/>
+									<listOptionValue builtIn="false" value="../Drivers/SAE_J1939/SAE_J1939_81_Network_Management/Inc"/>
 									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS"/>
 									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/FreeRTOS/Source/include"/>
 									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F"/>
-									<listOptionValue builtIn="false" value="../Drivers/SAE_J1939/SAE_J1939_81_Network_Management/Inc"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.1607007506" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>
