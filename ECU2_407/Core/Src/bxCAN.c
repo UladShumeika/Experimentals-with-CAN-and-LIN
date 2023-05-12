@@ -2,6 +2,7 @@
 // Includes
 //---------------------------------------------------------------------------
 #include "bxCAN.h"
+#include "SAE_J1939_21_Transport_Layer.h"
 #include <limits.h>
 #include <string.h>
 
@@ -17,6 +18,9 @@
 
 #define CAN2_RX0_PREEMPPRIORITY			(5U)
 #define CAN2_RX0_SUBPRIORITY			(0U)
+
+#define J1939_MESSAGE_PACKET_FREQ		(125U) // from 50 to 200 ms
+#define J1939_MESSAGE_TIMEOUT			(750U)
 
 //---------------------------------------------------------------------------
 // Descriptions of FreeRTOS elements
@@ -35,6 +39,7 @@ static USH_CAN_filterTypeDef filterConfig = {0};
 // Static function prototypes
 //---------------------------------------------------------------------------
 static void bxCAN_init(void);
+static void J1939_messagesProcessing(void);
 
 //---------------------------------------------------------------------------
 // Variables
@@ -61,6 +66,7 @@ void bxCAN_receiveMessages(void const *argument)
 
 		if(J1939_state != J1939_STATE_UNINIT)
 		{
+			J1939_messagesProcessing();
 		}
 	}
 }
@@ -129,6 +135,57 @@ void timeoutTimer_Callback(void const *argument)
 		default:
 			break;
 	}
+}
+
+//---------------------------------------------------------------------------
+// Other functions
+//---------------------------------------------------------------------------
+
+/**
+ * @brief 	This function is used to processing J1939 messages.
+ * @param 	rxMessage - A pointer to the receiving message's data.
+ * @param	data - A pointer to the receiving data.
+ * @retval	None.
+ */
+void J1939_messagesProcessing(void)
+{
+	J1939_status status = J1939_STATUS_OK;
+	USH_CAN_rxHeaderTypeDef rxMessage = {0};
+	uint8_t data[8] = {0};
+	uint8_t pduFormat = 0;
+
+	CAN_getRxMessage(USE_CAN, USE_CAN_FIFO, &rxMessage, data);
+
+	pduFormat = (uint8_t)(rxMessage.ExtId >> 16U);
+//	uint8_t pages = (uint8_t)(rxMessage->ExtId >> 24U) & J1939_PRIORITY_MASK;
+//	uint8_t destinAddress = (uint8_t)(rxMessage->ExtId >> 8U);
+//	uint8_t sourceAddress = (uint8_t)rxMessage->ExtId;
+
+	if(J1939_state != J1939_STATE_UNINIT)
+	{
+		if(pduFormat == 0xEA)
+		{
+			status = J1939_readTP_connectionManagement(data);
+			if(status == J1939_STATUS_OK)
+			{
+				// Start timeout timer
+				osTimerStart(timeoutTimerHandle, J1939_MESSAGE_TIMEOUT);
+			}
+
+		} else if(pduFormat == 0xEB)
+		{
+			// Stop timeout timer
+			osTimerStop(timeoutTimerHandle);
+
+			// Read the receiving data
+			status = J1939_readTP_dataTransfer(data);
+
+			// If the receiving data isn't finished, start timeout timer
+			if(status == J1939_STATUS_DATA_CONTINUE) osTimerStart(timeoutTimerHandle, J1939_MESSAGE_TIMEOUT);
+		}
+	}
+
+	CAN_interruptEnable(USE_CAN, CAN_IT_RX_FIFO0_MSG_PENDING);
 }
 
 //---------------------------------------------------------------------------
