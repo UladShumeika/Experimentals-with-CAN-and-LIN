@@ -31,6 +31,21 @@
 	</natures>
 	<linkedResources>
 		<link>
+			<name>SAE_J1939</name>
+			<type>2</type>
+			<location>E:/Repositories/Experimentals-with-CAN-and-LIN/ECU1_429/Drivers/SAE_J1939</location>
+		</link>
+		<link>
+			<name>STM32F4xx_customLibrary</name>
+			<type>2</type>
+			<location>E:/Repositories/Experimentals-with-CAN-and-LIN/ECU1_429/Drivers/STM32F4xx_customLibrary</location>
+		</link>
+		<link>
+			<name>Drivers/SAE_J1939</name>
+			<type>2</type>
+			<location>E:/Repositories/Experimentals-with-CAN-and-LIN/ECU1_429/Drivers/SAE_J1939</location>
+		</link>
+		<link>
 			<name>Drivers/STM32F4xx_customLibrary</name>
 			<type>2</type>
 			<location>E:/Repositories/Experimentals-with-CAN-and-LIN/ECU1_429/Drivers/STM32F4xx_customLibrary</location>
