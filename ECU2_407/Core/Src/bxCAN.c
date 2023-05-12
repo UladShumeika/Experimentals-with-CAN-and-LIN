@@ -83,7 +83,7 @@ void bxCAN_sendMessages(void const *argument)
 	// Infinite loop
 	for(;;)
 	{
-		xTaskNotifyWait(0, ULONG_MAX, &notifiedValue, osWaitForever);
+		xTaskNotifyWait(0, ULONG_MAX, &notifiedValue, portMAX_DELAY);
 
 		switch(notifiedValue)
 		{
