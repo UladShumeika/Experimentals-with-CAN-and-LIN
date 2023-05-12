@@ -8,6 +8,7 @@
 // Defines
 //---------------------------------------------------------------------------
 #define USE_CAN							(CAN2)
+#define USE_CAN_FIFO					(CAN_FILTER_FIFO_0)
 
 // CAN1 interrupt priorities
 #define CAN2_TX_PREEMPPRIORITY			(5U)
@@ -104,7 +105,7 @@ static void bxCAN_init(void)
 	filterConfig.FilterIdLow			= 0x0000U;
 	filterConfig.FilterMaskIdHigh		= 0x0000U;
 	filterConfig.FilterMaskIdLow		= 0x0000U;
-	filterConfig.FilterFIFOAssignment	= CAN_FILTER_FIFO_0;
+	filterConfig.FilterFIFOAssignment	= USE_CAN_FIFO;
 	filterConfig.FilterBank				= 15U;
 	filterConfig.FilterMode				= CAN_FILTER_MODE_IDMASK;
 	filterConfig.FilterScale			= CAN_FILTERSCALE_32BIT;
