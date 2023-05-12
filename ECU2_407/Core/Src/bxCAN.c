@@ -28,7 +28,7 @@ static osThreadId receiveMessagesHandle;
 // Structure definitions
 //---------------------------------------------------------------------------
 USH_CAN_settingsTypeDef canInit = {0};
-USH_CAN_filterTypeDef filterConfig = {0};
+static USH_CAN_filterTypeDef filterConfig = {0};
 
 //---------------------------------------------------------------------------
 // Static function prototypes
