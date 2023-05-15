@@ -65,7 +65,6 @@
 //---------------------------------------------------------------------------
 static osThreadId sendMessagesHandle;
 static osThreadId receiveMessagesHandle;
-static osSemaphoreId receiveMessagesSemHandle;
 static osTimerId timeoutTimerHandle;
 
 //---------------------------------------------------------------------------
@@ -105,7 +104,7 @@ void bxCAN_receiveMessages(void const *argument)
 	// Infinite loop
 	for(;;)
 	{
-		osSemaphoreWait(receiveMessagesSemHandle, osWaitForever);
+		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
 		if(J1939_state != J1939_STATE_UNINIT)
 		{
@@ -126,7 +125,7 @@ void bxCAN_sendMessages(void const *argument)
 	// Infinite loop
 	for(;;)
 	{
-		xTaskNotifyWait(0, ULONG_MAX, &notifiedValue, osWaitForever);
+		xTaskNotifyWait(0, ULONG_MAX, &notifiedValue, portMAX_DELAY);
 
 		switch(notifiedValue)
 		{
@@ -306,11 +305,6 @@ void bxCAN_freeRtosInit(void)
 	osThreadDef(receiveMessages, bxCAN_receiveMessages, osPriorityLow, 0, 128);
 	receiveMessagesHandle = osThreadCreate(osThread(receiveMessages), NULL);
 
-	// Create the semaphore(s)
-	// definition and creation of the receive messages semaphore
-	osSemaphoreDef(receiveMessagesSem);
-	receiveMessagesSemHandle = osSemaphoreCreate(osSemaphore(receiveMessagesSem), 1);
-
 	// Create the timer(s)
 	// definition and creation of the timeout timer for J1939 TP messages
 	osTimerDef(Timeout, timeoutTimer_Callback);
@@ -330,10 +324,14 @@ void bxCAN_freeRtosInit(void)
   */
 void CAN_rxFifo0MsgPendingCallback(CAN_TypeDef* can)
 {
+	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
 	if(can == USE_CAN)
 	{
 		CAN_interruptDisable(USE_CAN, CAN_IT_RX_FIFO0_MSG_PENDING);
 
-		osSemaphoreRelease(receiveMessagesSemHandle);
+		vTaskNotifyGiveFromISR(receiveMessagesHandle, &xHigherPriorityTaskWoken);
+
+		portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 	}
 }
