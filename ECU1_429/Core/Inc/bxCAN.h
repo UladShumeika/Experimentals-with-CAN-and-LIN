@@ -40,6 +40,15 @@ typedef enum
 	J1939_NOTIFICATION_NORMAL					/* For sending packages <= 8 bytes */
 } J1939_notificationsTypes;
 
+/**
+ * @brief The structure for storing messages which is or less 8 bytes.
+ */
+typedef struct
+{
+	uint8_t* data;							/* A pointer to the sending data */
+	USH_CAN_txHeaderTypeDef txMessage;		/* A structure for CAN frame settings */
+} dataStructure;
+
 //---------------------------------------------------------------------------
 // External function prototypes
 //---------------------------------------------------------------------------
