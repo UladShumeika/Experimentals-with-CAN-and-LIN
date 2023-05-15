@@ -115,12 +115,14 @@ void bxCAN_sendMessages(void const *argument)
 
 /**
   * @brief 	Function implementing the timer callback
-  * @param	argument - J1939 state.
+  * @param	argument - Used to get a pointer to the state of the J1939 protocol.
   * @retval	None.
   */
 void timeoutTimer_Callback(void const *argument)
 {
-	switch((uint32_t)argument)
+	J1939_states result = *(J1939_states*)pvTimerGetTimerID((TimerHandle_t)argument);
+
+	switch(result)
 	{
 		case J1939_STATE_TP_RECEIVING_BROADCAST:
 		case J1939_STATE_TP_RECEIVING_PEER_TO_PEER:
@@ -129,7 +131,7 @@ void timeoutTimer_Callback(void const *argument)
 
 		case J1939_STATE_TP_SENDING_BROADCAST:
 		case J1939_STATE_TP_SENDING_PEER_TO_PEER:
-			xTaskNotify(sendMessagesHandle, (uint32_t)J1939_NOTIFICATION_TP_CM_Abort, eSetBits);
+			xTaskNotify(sendMessagesHandle, (uint32_t)J1939_NOTIFICATION_TP_DATA_TRANSFER, eSetBits);
 			break;
 
 		default:
@@ -263,7 +265,7 @@ void bxCAN_freeRtosInit(void)
 	// Create the timer(s)
 	// definition and creation of the timeout timer for J1939 TP messages
 	osTimerDef(Timeout, timeoutTimer_Callback);
-	timeoutTimerHandle = osTimerCreate(osTimer(Timeout), osTimerOnce, (void *)J1939_state);
+	timeoutTimerHandle = osTimerCreate(osTimer(Timeout), osTimerOnce, (void *)&J1939_state);
 }
 
 //---------------------------------------------------------------------------
