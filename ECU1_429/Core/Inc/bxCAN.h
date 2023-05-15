@@ -56,10 +56,11 @@ typedef struct
 /* Initialization */
 void bxCAN_freeRtosInit(void);
 
-void bxCAN_sendMessages(void const *argument);
+/* FreeRTOS tasks */
 void bxCAN_receiveMessages(void const *argument);
+void bxCAN_sendMessages(void const *argument);
 void timeoutTimer_Callback(void const *argument);
-void J1939_messagesProcessing(void);
+
 /* Driver functions */
 
 #endif /* __CAN_H */
