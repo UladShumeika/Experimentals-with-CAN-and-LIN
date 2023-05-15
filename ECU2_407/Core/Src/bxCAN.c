@@ -271,16 +271,21 @@ void J1939_messagesProcessing(void)
 
 	if(J1939_state != J1939_STATE_UNINIT)
 	{
-		if(pduFormat == 0xEA)
+		if(pduFormat == J1939_CONNECTION_MANAGEMENT)
 		{
 			status = J1939_readTP_connectionManagement(data);
 			if(status == J1939_STATUS_OK)
 			{
 				// Start timeout timer
 				osTimerStart(timeoutTimerHandle, J1939_MESSAGE_TIMEOUT);
+			} else if((status == J1939_STATUS_DATA_ABORT) && ((J1939_state == J1939_STATE_TP_SENDING_BROADCAST) || \
+					                                          (J1939_state == J1939_STATE_TP_SENDING_PEER_TO_PEER)))
+			{
+				J1939_state = J1939_STATE_NORMAL;
+				J1939_cleanTPstructures();
 			}
 
-		} else if(pduFormat == 0xEB)
+		} else if(pduFormat == J1939_DATA_TRANSFER)
 		{
 			// Stop timeout timer
 			osTimerStop(timeoutTimerHandle);
