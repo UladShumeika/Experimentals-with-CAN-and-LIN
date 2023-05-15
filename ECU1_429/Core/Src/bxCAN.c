@@ -338,3 +338,15 @@ void CAN_rxFifo0MsgPendingCallback(CAN_TypeDef* can)
 		portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 	}
 }
+
+/**
+  * @brief  TX mailbox 0 complete callback.
+  * @note	This function should not be modified, when the callback is needed,
+  * 		the CAN_txMailbox0CompleteCallback could be implemented in the user file.
+  * @param  can - A pointer to CAN peripheral to be used where x is 1 or 2.
+  * @retval None.
+  */
+void CAN_txMailbox0CompleteCallback(CAN_TypeDef* can)
+{
+
+}
