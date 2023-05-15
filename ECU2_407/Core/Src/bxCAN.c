@@ -215,6 +215,41 @@ void timeoutTimer_Callback(void const *argument)
 //---------------------------------------------------------------------------
 
 /**
+ * @brief	This function is used to send message via J1939 protocol.
+ * @param 	data - A pointer to the sending data.
+ * @param 	dataSize - A size of the sending data.
+ * @param 	destinationAddress - A destination address(255 for broadcast).
+ */
+void J1939_sendMessage(uint8_t* data, uint16_t dataSize, uint8_t destinationAddress, uint32_t PGN)
+{
+	if(dataSize > 8)
+	{
+		if(destinationAddress == J1939_BROADCAST_ADDRESS)
+		{
+			J1939_fillTPstructures(data, dataSize, PGN, J1939_CONTROL_BYTE_TP_CM_BAM);
+			J1939_state = J1939_STATE_TP_SENDING_BROADCAST;
+
+			xTaskNotify(sendMessagesHandle, J1939_NOTIFICATION_TP_CM_BAM, eSetBits);
+		} else	// peer-to-peer connection
+		{
+			J1939_fillTPstructures(data, dataSize, PGN, J1939_CONTROL_BYTE_TP_CM_RTS);
+			J1939_state = J1939_STATE_TP_SENDING_PEER_TO_PEER;
+
+			xTaskNotify(sendMessagesHandle, J1939_NOTIFICATION_TP_CM_RTS, eSetBits);
+		}
+	} else
+	{
+		txData.data = data;
+		txData.txMessage.StdId = 0x0001;
+		txData.txMessage.IDE = CAN_ID_STD;
+		txData.txMessage.RTR = CAN_RTR_DATA;
+		txData.txMessage.DLC = dataSize;
+
+		xTaskNotify(sendMessagesHandle, J1939_NOTIFICATION_NORMAL, eSetBits);
+	}
+}
+
+/**
  * @brief 	This function is used to processing J1939 messages.
  * @param 	rxMessage - A pointer to the receiving message's data.
  * @param	data - A pointer to the receiving data.
