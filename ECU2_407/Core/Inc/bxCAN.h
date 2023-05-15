@@ -31,11 +31,13 @@ typedef enum
  */
 typedef enum
 {
-	J1939_NOTIFICATION_TP_CM_Abort,
-	J1939_NOTIFICATION_TP_CM_BAM,
-	J1939_NOTIFICATION_TP_CM_EndOfMsgACK,
-	J1939_NOTIFICATION_TP_CM_CTS,
-	J1939_NOTIFICATION_TP_CM_RTS
+	J1939_NOTIFICATION_TP_DATA_TRANSFER,		/* For sending data transfer packages */
+	J1939_NOTIFICATION_TP_CM_Abort,				/* For sending Abort packages */
+	J1939_NOTIFICATION_TP_CM_BAM,				/* For sending BAM packages */
+	J1939_NOTIFICATION_TP_CM_EndOfMsgACK,		/* For sending EndOfMsgACK packages */
+	J1939_NOTIFICATION_TP_CM_CTS,				/* For sending CTS packages */
+	J1939_NOTIFICATION_TP_CM_RTS,				/* For sending RTS packages */
+	J1939_NOTIFICATION_NORMAL					/* For sending packages <= 8 bytes */
 } J1939_notificationsTypes;
 
 //---------------------------------------------------------------------------
