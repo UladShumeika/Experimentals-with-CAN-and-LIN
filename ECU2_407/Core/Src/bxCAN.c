@@ -365,7 +365,7 @@ void bxCAN_freeRtosInit(void)
 	sendMessagesHandle = osThreadCreate(osThread(sendMessages), NULL);
 
 	// definition and creation of the receiving messages thread
-	osThreadDef(receiveMessages, bxCAN_receiveMessages, osPriorityLow, 0, 128);
+	osThreadDef(receiveMessages, bxCAN_receiveMessages, osPriorityBelowNormal, 0, 128);
 	receiveMessagesHandle = osThreadCreate(osThread(receiveMessages), NULL);
 
 	// Create the timer(s)
