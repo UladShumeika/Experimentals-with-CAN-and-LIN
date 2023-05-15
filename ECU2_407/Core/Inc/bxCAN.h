@@ -52,8 +52,17 @@ typedef struct
 //---------------------------------------------------------------------------
 // External function prototypes
 //---------------------------------------------------------------------------
+
+/* Initialization */
 void bxCAN_freeRtosInit(void);
-void bxCAN_sendMessages(void const *argument);
+
+/* FreeRTOS tasks */
 void bxCAN_receiveMessages(void const *argument);
+void bxCAN_sendMessages(void const *argument);
+void timeoutTimer_Callback(void const *argument);
+
+/* Driver functions */
+void J1939_sendMessage(uint8_t* data, uint16_t dataSize, uint8_t destinationAddress, uint32_t PGN);
+void applicationTask(void const *argument);
 
 #endif /* __CAN_H */
