@@ -124,6 +124,7 @@ void bxCAN_receiveMessages(void const *argument)
 void bxCAN_sendMessages(void const *argument)
 {
 	uint32_t notifiedValue;
+	J1939_status status = J1939_STATUS_DATA_CONTINUE;
 
 	// Infinite loop
 	for(;;)
@@ -132,12 +133,32 @@ void bxCAN_sendMessages(void const *argument)
 
 		switch(notifiedValue)
 		{
+			case J1939_NOTIFICATION_TP_DATA_TRANSFER:
+				if(J1939_STATE_TP_SENDING_BROADCAST)
+				{
+					status = J1939_sendTP_dataTransfer(J1939_BROADCAST_ADDRESS);
+				} else
+				{
+					//J1939_sendTP_dataTransfer(destinationAddress);
+				}
+
+				if(status == J1939_STATUS_DATA_CONTINUE)
+				{
+					osTimerStart(timeoutTimerHandle, J1939_MESSAGE_PACKET_FREQ);
+				} else
+				{
+					J1939_state = J1939_STATE_NORMAL;
+					J1939_cleanTPstructures();
+				}
+				break;
+
 			case J1939_NOTIFICATION_TP_CM_Abort:
 				// send Abort
 				break;
 
 			case J1939_NOTIFICATION_TP_CM_BAM:
-				// send BAM
+				J1939_sendTP_connectionManagement(J1939_BROADCAST_ADDRESS);
+				osTimerStart(timeoutTimerHandle, J1939_MESSAGE_PACKET_FREQ);
 				break;
 
 			case J1939_NOTIFICATION_TP_CM_CTS:
@@ -150,6 +171,10 @@ void bxCAN_sendMessages(void const *argument)
 
 			case J1939_NOTIFICATION_TP_CM_EndOfMsgACK:
 				// send END
+				break;
+
+			case J1939_NOTIFICATION_NORMAL:
+				CAN_addTxMessage(USE_CAN, &txData.txMessage, txData.data);
 				break;
 
 			default:
