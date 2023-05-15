@@ -202,7 +202,7 @@ void timeoutTimer_Callback(void const *argument)
 
 		case J1939_STATE_TP_SENDING_BROADCAST:
 		case J1939_STATE_TP_SENDING_PEER_TO_PEER:
-			xTaskNotify(sendMessagesHandle, (uint32_t)J1939_NOTIFICATION_TP_CM_Abort, eSetBits);
+			xTaskNotify(sendMessagesHandle, (uint32_t)J1939_NOTIFICATION_TP_DATA_TRANSFER, eSetBits);
 			break;
 
 		default:
