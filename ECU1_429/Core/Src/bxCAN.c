@@ -3,7 +3,9 @@
 //---------------------------------------------------------------------------
 #include "bxCAN.h"
 #include "SAE_J1939_21_Transport_Layer.h"
+#include "SAE_J1939_81_Network_Management_Layer.h"
 #include <limits.h>
+#include <string.h>
 
 //---------------------------------------------------------------------------
 // Configuration section
@@ -100,6 +102,7 @@ static J1939_states J1939_state = J1939_STATE_UNINIT;
 void bxCAN_receiveMessages(void const *argument)
 {
 	bxCAN_init();
+	J1939_setCurrentECUAddress(CURRENT_ECU_ADDRESS);
 
 	// Infinite loop
 	for(;;)
