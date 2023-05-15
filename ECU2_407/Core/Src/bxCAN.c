@@ -50,7 +50,17 @@
 
 #endif
 
+//---------------------------------------------------------------------------
+// Defines
+//---------------------------------------------------------------------------
+#define J1939_MESSAGE_PACKET_FREQ				(125U) // from 50 to 200 ms
 #define J1939_MESSAGE_TIMEOUT					(750U)
+
+#define J1939_BROADCAST_ADDRESS					(255U)
+
+#define J1939_CONNECTION_MANAGEMENT				(0xECU)
+#define J1939_DATA_TRANSFER						(0xEBU)
+
 //---------------------------------------------------------------------------
 // Descriptions of FreeRTOS elements
 //---------------------------------------------------------------------------
