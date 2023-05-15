@@ -41,11 +41,14 @@ typedef enum
 //---------------------------------------------------------------------------
 // External function prototypes
 //---------------------------------------------------------------------------
+
+/* Initialization */
 void bxCAN_freeRtosInit(void);
-void bxCAN_init(void);
+
 void bxCAN_sendMessages(void const *argument);
 void bxCAN_receiveMessages(void const *argument);
 void timeoutTimer_Callback(void const *argument);
 void J1939_messagesProcessing(void);
+/* Driver functions */
 
 #endif /* __CAN_H */
