@@ -7,21 +7,50 @@
 #include <string.h>
 
 //---------------------------------------------------------------------------
-// Defines
+// Configuration section
 //---------------------------------------------------------------------------
-#define USE_CAN							(CAN2)
-#define USE_CAN_FIFO					(CAN_FILTER_FIFO_0)
 
-// CAN1 interrupt priorities
-#define CAN2_TX_PREEMPPRIORITY			(5U)
-#define CAN2_TX_SUBPRIORITY				(0U)
+/* NOTE: When changing the CAN bus configuration, it is necessary to check
+ * 		 the configuration of the bus(including filters) and global interrupts.
+ */
 
-#define CAN2_RX0_PREEMPPRIORITY			(5U)
-#define CAN2_RX0_SUBPRIORITY			(0U)
+#if defined(STM32F429xx)
+	#define CURRENT_ECU_ADDRESS					(101U)
 
-#define J1939_MESSAGE_PACKET_FREQ		(125U) // from 50 to 200 ms
-#define J1939_MESSAGE_TIMEOUT			(750U)
+	#define USE_CAN								(CAN1)
+	#define USE_CAN_FIFO						(CAN_FILTER_FIFO_0)
 
+	#define CAN_BAUDRATE_PRESCALER				(10U)			// Bit rate 250 kbit/s at PCLK1 = 45 MHz
+	#define CAN_TIME_SEGMENT_1					(CAN_TS1_TQ15)
+	#define CAN_TIME_SEGMENT_2					(CAN_TS2_TQ2)
+	#define CAN_RESYCH_JUMP_WIDTH				(CAN_SJW_TQ1)
+
+	#define CAN_TX_PREEMPPRIORITY				(5U)
+	#define CAN_TX_SUBPRIORITY					(0U)
+
+	#define CAN_RX0_PREEMPPRIORITY				(5U)
+	#define CAN_RX0_SUBPRIORITY					(0U)
+
+#elif defined(STM32F407xx)
+	#define CURRENT_ECU_ADDRESS					(202U)
+
+	#define USE_CAN								(CAN2)
+	#define USE_CAN_FIFO						(CAN_FILTER_FIFO_0)
+
+	#define CAN_BAUDRATE_PRESCALER				(12U)			// Bit rate 250 kbit/s at PCLK1 = 42 MHz
+	#define CAN_TIME_SEGMENT_1					(CAN_TS1_TQ11)
+	#define CAN_TIME_SEGMENT_2					(CAN_TS2_TQ2)
+	#define CAN_RESYCH_JUMP_WIDTH				(CAN_SJW_TQ1)
+
+	#define CAN_TX_PREEMPPRIORITY				(5U)
+	#define CAN_TX_SUBPRIORITY					(0U)
+
+	#define CAN_RX0_PREEMPPRIORITY				(5U)
+	#define CAN_RX0_SUBPRIORITY					(0U)
+
+#endif
+
+#define J1939_MESSAGE_TIMEOUT					(750U)
 //---------------------------------------------------------------------------
 // Descriptions of FreeRTOS elements
 //---------------------------------------------------------------------------
@@ -202,10 +231,10 @@ void J1939_messagesProcessing(void)
 static void bxCAN_init(void)
 {
 	canInit.CANx						= USE_CAN;
-	canInit.Timings.BaudratePrescaler 	= 12U;
-	canInit.Timings.TimeSegment1 		= CAN_TS1_TQ11;
-	canInit.Timings.TimeSegment2		= CAN_TS2_TQ2;
-	canInit.Timings.ResynchJumpWidth	= CAN_SJW_TQ1;
+	canInit.Timings.BaudratePrescaler 	= CAN_BAUDRATE_PRESCALER;
+	canInit.Timings.TimeSegment1 		= CAN_TIME_SEGMENT_1;
+	canInit.Timings.TimeSegment2		= CAN_TIME_SEGMENT_2;
+	canInit.Timings.ResynchJumpWidth	= CAN_RESYCH_JUMP_WIDTH;
 	canInit.Mode						= CAN_MODE_NORMAL;
 	canInit.AutoBusOff					= ENABLE;
 	canInit.AutoWakeUp					= DISABLE;
@@ -239,10 +268,10 @@ static void bxCAN_init(void)
  */
 void CAN_initGlobalInterrupts(void)
 {
-	MISC_NVIC_setPriority(CAN2_TX_IRQn, CAN2_TX_PREEMPPRIORITY, CAN2_TX_SUBPRIORITY);
+	MISC_NVIC_setPriority(CAN2_TX_IRQn, CAN_TX_PREEMPPRIORITY, CAN_TX_SUBPRIORITY);
 	MISC_NVIC_enableIRQ(CAN2_TX_IRQn);
 
-	MISC_NVIC_setPriority(CAN2_RX0_IRQn, CAN2_RX0_PREEMPPRIORITY, CAN2_RX0_SUBPRIORITY);
+	MISC_NVIC_setPriority(CAN2_RX0_IRQn, CAN_RX0_PREEMPPRIORITY, CAN_RX0_SUBPRIORITY);
 	MISC_NVIC_enableIRQ(CAN2_RX0_IRQn);
 }
 
