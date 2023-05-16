@@ -260,41 +260,46 @@ void J1939_messagesProcessing(void)
 	J1939_status status = J1939_STATUS_OK;
 	USH_CAN_rxHeaderTypeDef rxMessage = {0};
 	uint8_t data[8] = {0};
-	uint8_t pduFormat = 0;
+	uint8_t pduFormat = 0, destinAddress = 0;
 
 	CAN_getRxMessage(USE_CAN, USE_CAN_FIFO, &rxMessage, data);
 
 	pduFormat = (uint8_t)(rxMessage.ExtId >> 16U);
 //	uint8_t pages = (uint8_t)(rxMessage->ExtId >> 24U) & J1939_PRIORITY_MASK;
-//	uint8_t destinAddress = (uint8_t)(rxMessage->ExtId >> 8U);
+	destinAddress = (uint8_t)(rxMessage.ExtId >> 8U);
 //	uint8_t sourceAddress = (uint8_t)rxMessage->ExtId;
 
+	// Process message when the CAN bus and the J1939 protocol is initialized
 	if(J1939_state != J1939_STATE_UNINIT)
 	{
-		if(pduFormat == J1939_CONNECTION_MANAGEMENT)
+		// Process message when destination address is J1939_BROADCAST_ADDRESS or CURRENT_ECU_ADDRESS
+		if((destinAddress == J1939_BROADCAST_ADDRESS) || (destinAddress == CURRENT_ECU_ADDRESS))
 		{
-			status = J1939_readTP_connectionManagement(data);
-			if(status == J1939_STATUS_OK)
+			if(pduFormat == J1939_CONNECTION_MANAGEMENT)
 			{
-				// Start timeout timer
-				osTimerStart(timeoutTimerHandle, J1939_MESSAGE_TIMEOUT);
-			} else if((status == J1939_STATUS_DATA_ABORT) && ((J1939_state == J1939_STATE_TP_SENDING_BROADCAST) || \
-					                                          (J1939_state == J1939_STATE_TP_SENDING_PEER_TO_PEER)))
+				status = J1939_readTP_connectionManagement(data);
+				if(status == J1939_STATUS_OK)
+				{
+					// Start timeout timer
+					osTimerStart(timeoutTimerHandle, J1939_MESSAGE_TIMEOUT);
+				} else if((status == J1939_STATUS_DATA_ABORT) && ((J1939_state == J1939_STATE_TP_SENDING_BROADCAST) || \
+						                                          (J1939_state == J1939_STATE_TP_SENDING_PEER_TO_PEER)))
+				{
+					J1939_state = J1939_STATE_NORMAL;
+					J1939_cleanTPstructures();
+				}
+
+			} else if(pduFormat == J1939_DATA_TRANSFER)
 			{
-				J1939_state = J1939_STATE_NORMAL;
-				J1939_cleanTPstructures();
+				// Stop timeout timer
+				osTimerStop(timeoutTimerHandle);
+
+				// Read the receiving data
+				status = J1939_readTP_dataTransfer(data);
+
+				// If the receiving data isn't finished, start timeout timer
+				if(status == J1939_STATUS_DATA_CONTINUE) osTimerStart(timeoutTimerHandle, J1939_MESSAGE_TIMEOUT);
 			}
-
-		} else if(pduFormat == J1939_DATA_TRANSFER)
-		{
-			// Stop timeout timer
-			osTimerStop(timeoutTimerHandle);
-
-			// Read the receiving data
-			status = J1939_readTP_dataTransfer(data);
-
-			// If the receiving data isn't finished, start timeout timer
-			if(status == J1939_STATUS_DATA_CONTINUE) osTimerStart(timeoutTimerHandle, J1939_MESSAGE_TIMEOUT);
 		}
 	}
 
