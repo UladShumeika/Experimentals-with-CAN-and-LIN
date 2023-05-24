@@ -70,6 +70,7 @@ static osThreadId receiveMessagesHandle;
 static osThreadId applicationHandle;
 static osTimerId timeoutTimerHandle;
 osMessageQId fromCanToApplicationHandle;
+osPoolId J1939_messageStructureHandle;
 
 //---------------------------------------------------------------------------
 // Structure definitions
@@ -428,6 +429,10 @@ void bxCAN_freeRtosInit(void)
 	osMessageQDef(fromCanToApplication, 1, J1939_message);
 	fromCanToApplicationHandle = osMessageCreate(osMessageQ(fromCanToApplication), NULL);
 
+	// Create the memory pool(s)
+	// definition and creating of messageStructHandle
+	osPoolDef(messagePool, 1, J1939_message);
+	J1939_messageStructureHandle = osPoolCreate(osPool(messagePool));
 }
 
 //---------------------------------------------------------------------------
