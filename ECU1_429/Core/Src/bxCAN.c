@@ -258,13 +258,13 @@ void J1939_sendMessage(uint8_t* data, uint16_t dataSize, uint8_t destinationAddr
 //			J1939_fillTPstructures(data, dataSize, PGN, J1939_CONTROL_BYTE_TP_CM_BAM);
 //			J1939_state = J1939_STATE_TP_SENDING_BROADCAST;
 
-			xTaskNotify(sendMessagesHandle, J1939_NOTIFICATION_TP_CM_BAM, eSetBits);
+			xTaskNotify(sendMessagesHandle, J1939_NOTIFICATION_BAM, eSetBits);
 		} else	// peer-to-peer connection
 		{
 //			J1939_fillTPstructures(data, dataSize, PGN, J1939_CONTROL_BYTE_TP_CM_RTS);
 //			J1939_state = J1939_STATE_TP_SENDING_PEER_TO_PEER;
 
-			xTaskNotify(sendMessagesHandle, J1939_NOTIFICATION_TP_CM_RTS, eSetBits);
+			xTaskNotify(sendMessagesHandle, J1939_NOTIFICATION_RTS, eSetBits);
 		}
 	} else
 	{
