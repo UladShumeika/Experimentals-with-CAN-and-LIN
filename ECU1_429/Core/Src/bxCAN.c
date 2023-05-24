@@ -77,6 +77,7 @@
 //---------------------------------------------------------------------------
 static osThreadId sendMessagesHandle;
 static osThreadId receiveMessagesHandle;
+static osThreadId applicationHandle;
 static osTimerId timeoutTimerHandle;
 osMessageQId fromCanToApplicationHandle;
 osPoolId J1939_messageStructureHandle;
@@ -204,22 +205,38 @@ void bxCAN_sendMessages(void const *argument)
 void timeoutTimer_Callback(void const *argument)
 {
 	J1939_states result = *(J1939_states*)pvTimerGetTimerID((TimerHandle_t)argument);
+}
 
-//	switch(result)
-//	{
-//		case J1939_STATE_TP_RECEIVING_BROADCAST:
-//		case J1939_STATE_TP_RECEIVING_PEER_TO_PEER:
-//			xTaskNotify(sendMessagesHandle, (uint32_t)J1939_NOTIFICATION_TP_CM_Abort, eSetBits);
-//			break;
-//
-//		case J1939_STATE_TP_SENDING_BROADCAST:
-//		case J1939_STATE_TP_SENDING_PEER_TO_PEER:
-//			xTaskNotify(sendMessagesHandle, (uint32_t)J1939_NOTIFICATION_TP_DATA_TRANSFER, eSetBits);
-//			break;
-//
-//		default:
-//			break;
-//	}
+/**
+  * @brief 	Function implementing the application thread.
+  * @param	argument - Not used.
+  * @retval	None.
+  */
+void applicationTask(void const *argument)
+{
+	osEvent evt;
+	J1939_message *message;
+
+#if defined(STM32F407xx)
+
+	uint8_t testData[] = "This is test message for TP..";
+	uint16_t dataSize = strlen((char*)testData);
+	uint32_t PGN = 0xFEFE;
+
+	J1939_sendMessage(testData, dataSize, J1939_BROADCAST_ADDRESS, PGN);
+//	J1939_sendMessage(testData, dataSize, ECU1_ADDRESS, PGN);
+#endif
+
+	for(;;)
+	{
+		evt = osMessageGet(fromCanToApplicationHandle, osWaitForever);
+
+		if(evt.status == osEventMessage)
+		{
+			message = evt.value.p;
+			(void)message;
+		}
+	}
 }
 
 //---------------------------------------------------------------------------
@@ -391,6 +408,10 @@ void bxCAN_freeRtosInit(void)
 	// definition and creation of the receiving messages thread
 	osThreadDef(receiveMessages, bxCAN_receiveMessages, osPriorityBelowNormal, 0, 128);
 	receiveMessagesHandle = osThreadCreate(osThread(receiveMessages), NULL);
+
+	// definition and creation of the application thread
+	osThreadDef(application, applicationTask, osPriorityLow, 0, 128);
+	applicationHandle = osThreadCreate(osThread(application), NULL);
 
 	// Create the timer(s)
 	// definition and creation of the timeout timer for J1939 TP messages

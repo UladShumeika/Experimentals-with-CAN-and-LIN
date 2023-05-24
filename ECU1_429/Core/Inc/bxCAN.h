@@ -59,5 +59,6 @@ void timeoutTimer_Callback(void const *argument);
 
 /* Driver functions */
 void J1939_sendMessage(uint8_t* data, uint16_t dataSize, uint8_t destinationAddress, uint32_t PGN);
+void applicationTask(void const *argument);
 
 #endif /* __CAN_H */
