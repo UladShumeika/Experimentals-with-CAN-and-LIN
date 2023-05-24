@@ -69,6 +69,7 @@ static osThreadId sendMessagesHandle;
 static osThreadId receiveMessagesHandle;
 static osThreadId applicationHandle;
 static osTimerId timeoutTimerHandle;
+osMessageQId fromCanToApplicationHandle;
 
 //---------------------------------------------------------------------------
 // Structure definitions
@@ -233,6 +234,7 @@ void applicationTask(void const *argument)
 
 	for(;;)
 	{
+		evt = osMessageGet(fromCanToApplicationHandle, osWaitForever);
 
 		if(evt.status == osEventMessage)
 		{
@@ -420,6 +422,12 @@ void bxCAN_freeRtosInit(void)
 	// definition and creation of the timeout timer for J1939 TP messages
 	osTimerDef(Timeout, timeoutTimer_Callback);
 	timeoutTimerHandle = osTimerCreate(osTimer(Timeout), osTimerOnce, (void *)&J1939_state);
+
+	// Create the queue(s)
+	// definition and creating of the queue for sending data from J1939 protocol to the application.
+	osMessageQDef(fromCanToApplication, 1, J1939_message);
+	fromCanToApplicationHandle = osMessageCreate(osMessageQ(fromCanToApplication), NULL);
+
 }
 
 //---------------------------------------------------------------------------
