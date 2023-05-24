@@ -18,13 +18,13 @@
  */
 typedef enum
 {
-	J1939_NOTIFICATION_TP_DATA_TRANSFER,		/* For sending data transfer packages */
-	J1939_NOTIFICATION_TP_CM_Abort,				/* For sending Abort packages */
-	J1939_NOTIFICATION_TP_CM_BAM,				/* For sending BAM packages */
-	J1939_NOTIFICATION_TP_CM_EndOfMsgACK,		/* For sending EndOfMsgACK packages */
-	J1939_NOTIFICATION_TP_CM_CTS,				/* For sending CTS packages */
-	J1939_NOTIFICATION_TP_CM_RTS,				/* For sending RTS packages */
-	J1939_NOTIFICATION_NORMAL					/* For sending packages <= 8 bytes */
+	J1939_NOTIFICATION_NORMAL,		/* For sending <= 8 bytes messages */
+	J1939_NOTIFICATION_BAM,			/* For sending BAM messages */
+	J1939_NOTIFICATION_RTS,			/* For sending RTS messages */
+	J1939_NOTIFICATION_CTS,			/* For sending CTS messages */
+	J1939_NOTIFICATION_EOM,			/* For sending EndOfMsgACK messages */
+	J1939_NOTIFICATION_ABORT,		/* For sending Abort messages */
+	J1939_NOTIFICATION_DATA,		/* For sending data transfer messages */
 } J1939_notificationsTypes;
 
 /**
