@@ -49,6 +49,15 @@ typedef struct
 	USH_CAN_txHeaderTypeDef txMessage;		/* A structure for CAN frame settings */
 } dataStructure;
 
+/**
+ * @brief J1939 data message structure.
+ */
+typedef struct
+{
+	uint8_t *message;						/* The pointer to received message */
+	uint16_t sizeMessage;					/* The size of received message */
+} J1939_message;
+
 //---------------------------------------------------------------------------
 // External function prototypes
 //---------------------------------------------------------------------------
