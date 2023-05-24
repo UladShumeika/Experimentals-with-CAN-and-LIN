@@ -348,48 +348,132 @@ void J1939_sendMessage(uint8_t* data, uint16_t dataSize, uint8_t destinationAddr
  */
 void J1939_messagesProcessing(void)
 {
-//	J1939_status status = J1939_STATUS_OK;
+	J1939_status status = J1939_NO_STATUS;
+	J1939_message *message;
 	USH_CAN_rxHeaderTypeDef rxMessage = {0};
 	uint8_t data[8] = {0};
-	uint8_t pduFormat = 0, destinAddress = 0;
+	uint8_t pduFormat = 0, destinAddress = 0, sourceAddress = 0;
 
-	CAN_getRxMessage(USE_CAN, USE_CAN_FIFO, &rxMessage, data);
-
-	pduFormat = (uint8_t)(rxMessage.ExtId >> 16U);
-//	uint8_t pages = (uint8_t)(rxMessage->ExtId >> 24U) & J1939_PRIORITY_MASK;
-	destinAddress = (uint8_t)(rxMessage.ExtId >> 8U);
-//	uint8_t sourceAddress = (uint8_t)rxMessage->ExtId;
-
-	// Process message when the CAN bus and the J1939 protocol is initialized
+	// Get and process a message when the CAN bus and the J1939 protocol is initialized
 	if(J1939_state != J1939_STATE_UNINIT)
 	{
+		CAN_getRxMessage(USE_CAN, USE_CAN_FIFO, &rxMessage, data);
+
+		pduFormat = (uint8_t)(rxMessage.ExtId >> 16U);
+		destinAddress = (uint8_t)(rxMessage.ExtId >> 8U);
+		sourceAddress = (uint8_t)rxMessage.ExtId;
+
 		// Process message when destination address is J1939_BROADCAST_ADDRESS or CURRENT_ECU_ADDRESS
 		if((destinAddress == J1939_BROADCAST_ADDRESS) || (destinAddress == CURRENT_ECU_ADDRESS))
 		{
 			if(pduFormat == J1939_CONNECTION_MANAGEMENT)
 			{
-//				status = J1939_readTP_connectionManagement(data);
-//				if(status == J1939_STATUS_OK)
-//				{
-//					// Start timeout timer
-//					osTimerStart(timeoutTimerHandle, J1939_MESSAGE_TIMEOUT);
-//				} else if((status == J1939_STATUS_DATA_ABORT) && ((J1939_state == J1939_STATE_TP_SENDING_BROADCAST) || \
-//						                                          (J1939_state == J1939_STATE_TP_SENDING_PEER_TO_PEER)))
-//				{
-//					J1939_state = J1939_STATE_NORMAL;
-//					J1939_cleanTPstructures();
-//				}
+				status = J1939_readTP_connectionManagement(data);
 
+				switch(status)
+				{
+					case J1939_STATUS_GOT_BAM_MESSAGE:
+						J1939_state = J1939_STATE_TP_RX_BROADCAST;
+						osTimerStart(timeoutTimerHandle, J1939_MESSAGE_DATA_TIMEOUT);
+						break;
+
+					case J1939_ERROR_BUSY:
+						if(J1939_state >= J1939_STATE_TP_RX_PTP_CTS)
+						{
+							J1939_setAbortReason(J1939_REASON_BUSY, sourceAddress);
+							xTaskNotify(sendMessagesHandle, J1939_NOTIFICATION_ABORT, eSetBits);
+						}
+						break;
+
+					case J1939_ERROR_MEMORY_ALLOCATION:
+						J1939_clearTPstructures();
+
+						if(destinAddress != J1939_BROADCAST_ADDRESS)
+						{
+							J1939_setAbortReason(J1939_REASON_MEMORY_ALLOCATION_ERROR, sourceAddress);
+							xTaskNotify(sendMessagesHandle, J1939_NOTIFICATION_ABORT, eSetBits);
+						}
+						break;
+
+					case J1939_ERROR_TOO_BIG_MESSAGE:
+						J1939_clearTPstructures();
+
+						if(destinAddress != J1939_BROADCAST_ADDRESS)
+						{
+							J1939_setAbortReason(J1939_REASON_TOO_BIG_MESSAGE, sourceAddress);
+							xTaskNotify(sendMessagesHandle, J1939_NOTIFICATION_ABORT, eSetBits);
+						}
+						break;
+
+					case J1939_STATUS_GOT_ABORT_SESSION:
+						if(J1939_state >= J1939_STATE_TP_RX_PTP_CTS)
+						{
+							J1939_clearTPstructures();
+							J1939_state = J1939_STATE_NORMAL;
+						}
+						break;
+
+					case J1939_STATUS_GOT_CTS_MESSAGE:
+						J1939_state = J1939_STATE_TP_TX_PTP_DATA;
+						osTimerStart(timeoutTimerHandle, J1939_MESSAGE_PACKET_FREQ);
+						break;
+
+					case J1939_STATUS_GOT_EOM_MESSAGE:
+						if(J1939_state == J1939_STATE_TP_TX_PTP_EOM) J1939_state = J1939_STATE_NORMAL;
+						break;
+
+					case J1939_STATUS_GOT_RTS_MESSAGE:
+						J1939_state = J1939_STATE_TP_RX_PTP_CTS;
+						osTimerStart(timeoutTimerHandle, J1939_MESSAGE_PACKET_FREQ);
+						break;
+
+					default:
+						break;
+				}
 			} else if(pduFormat == J1939_DATA_TRANSFER)
 			{
-				// Stop timeout timer
-				osTimerStop(timeoutTimerHandle);
+				if((J1939_state == J1939_STATE_TP_RX_BROADCAST) || (J1939_state == J1939_STATE_TP_RX_PTP_DATA))
+				{
+					// Stop timeout timer
+					osTimerStop(timeoutTimerHandle);
 
-				// Read the receiving data
-//				status = J1939_readTP_dataTransfer(data);
+					// Read the receiving data
+					status = J1939_readTP_dataTransfer(data);
 
-				// If the receiving data isn't finished, start timeout timer
-//				if(status == J1939_STATUS_DATA_CONTINUE) osTimerStart(timeoutTimerHandle, J1939_MESSAGE_TIMEOUT);
+					switch(status)
+					{
+						case J1939_STATUS_DATA_CONTINUE:
+							osTimerStart(timeoutTimerHandle, J1939_MESSAGE_DATA_TIMEOUT);
+							break;
+
+						case J1939_STATUS_DATA_FINISHED:
+							if(J1939_state == J1939_STATE_TP_RX_PTP_DATA)
+							{
+								J1939_state = J1939_STATE_TP_RX_PTP_EOM;
+								osTimerStart(timeoutTimerHandle, J1939_MESSAGE_PACKET_FREQ);
+							} else
+							{
+								message = (J1939_message*)osPoolCAlloc(J1939_messageStructureHandle);
+
+								message->message = J1939_getReceivedMessage();
+								message->sizeMessage = strlen((char*)message->message);
+
+								J1939_clearTPstructures();
+								J1939_state = J1939_STATE_NORMAL;
+
+								osMessagePut(fromCanToApplicationHandle, (uint32_t)message, osWaitForever);
+							}
+							break;
+
+						case J1939_STATUS_CTS:
+							J1939_state = J1939_STATE_TP_RX_PTP_CTS;
+							osTimerStart(timeoutTimerHandle, J1939_MESSAGE_PACKET_FREQ);
+							break;
+
+						default:
+							break;
+					}
+				}
 			}
 		}
 	}
