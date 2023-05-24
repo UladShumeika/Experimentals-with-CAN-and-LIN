@@ -112,10 +112,7 @@ void bxCAN_receiveMessages(void const *argument)
 	{
 		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
-		if(J1939_state != J1939_STATE_UNINIT)
-		{
-			J1939_messagesProcessing();
-		}
+		J1939_messagesProcessing();
 	}
 }
 
