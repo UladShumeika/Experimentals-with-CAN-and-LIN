@@ -313,18 +313,18 @@ void applicationTask(void const *argument)
  */
 void J1939_sendMessage(uint8_t* data, uint16_t dataSize, uint8_t destinationAddress, uint32_t PGN)
 {
-	if(dataSize > 8)
+	if(dataSize > 8U)
 	{
 		if(destinationAddress == J1939_BROADCAST_ADDRESS)
 		{
-//			J1939_fillTPstructures(data, dataSize, PGN, J1939_CONTROL_BYTE_TP_CM_BAM);
-//			J1939_state = J1939_STATE_TP_SENDING_BROADCAST;
+			J1939_state = J1939_STATE_TP_TX_BROADCAST;
+			J1939_fillTPstructures(data, dataSize, PGN, destinationAddress);
 
 			xTaskNotify(sendMessagesHandle, J1939_NOTIFICATION_BAM, eSetBits);
 		} else	// peer-to-peer connection
 		{
-//			J1939_fillTPstructures(data, dataSize, PGN, J1939_CONTROL_BYTE_TP_CM_RTS);
-//			J1939_state = J1939_STATE_TP_SENDING_PEER_TO_PEER;
+			J1939_state = J1939_STATE_TP_TX_PTP_CTS;
+			J1939_fillTPstructures(data, dataSize, PGN, destinationAddress);
 
 			xTaskNotify(sendMessagesHandle, J1939_NOTIFICATION_RTS, eSetBits);
 		}
