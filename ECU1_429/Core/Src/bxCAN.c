@@ -17,14 +17,19 @@
 
 #if defined(STM32F429xx)
 	#define CURRENT_ECU_ADDRESS					(101U)
+	#define ECU2_ADDRESS						(202U)
 
 	#define USE_CAN								(CAN1)
 	#define USE_CAN_FIFO						(CAN_FILTER_FIFO_0)
+	#define USE_FILTER_BANK						(0U)
 
 	#define CAN_BAUDRATE_PRESCALER				(10U)			// Bit rate 250 kbit/s at PCLK1 = 45 MHz
 	#define CAN_TIME_SEGMENT_1					(CAN_TS1_TQ15)
 	#define CAN_TIME_SEGMENT_2					(CAN_TS2_TQ2)
 	#define CAN_RESYCH_JUMP_WIDTH				(CAN_SJW_TQ1)
+
+	#define CAN_TX_IRQn							(CAN1_TX_IRQn)
+	#define CAN_RX0_IRQn						(CAN1_RX0_IRQn)
 
 	#define CAN_TX_PREEMPPRIORITY				(5U)
 	#define CAN_TX_SUBPRIORITY					(0U)
@@ -34,14 +39,19 @@
 
 #elif defined(STM32F407xx)
 	#define CURRENT_ECU_ADDRESS					(202U)
+	#define ECU1_ADDRESS						(101U)
 
 	#define USE_CAN								(CAN2)
 	#define USE_CAN_FIFO						(CAN_FILTER_FIFO_0)
+	#define USE_FILTER_BANK						(15U)
 
 	#define CAN_BAUDRATE_PRESCALER				(12U)			// Bit rate 250 kbit/s at PCLK1 = 42 MHz
 	#define CAN_TIME_SEGMENT_1					(CAN_TS1_TQ11)
 	#define CAN_TIME_SEGMENT_2					(CAN_TS2_TQ2)
 	#define CAN_RESYCH_JUMP_WIDTH				(CAN_SJW_TQ1)
+
+	#define CAN_TX_IRQn							(CAN2_TX_IRQn)
+	#define CAN_RX0_IRQn						(CAN2_RX0_IRQn)
 
 	#define CAN_TX_PREEMPPRIORITY				(5U)
 	#define CAN_TX_SUBPRIORITY					(0U)
@@ -335,10 +345,11 @@ static void bxCAN_init(void)
 	filterConfig.FilterMaskIdHigh		= 0x0000U;
 	filterConfig.FilterMaskIdLow		= 0x0000U;
 	filterConfig.FilterFIFOAssignment	= USE_CAN_FIFO;
-	filterConfig.FilterBank				= 0U;
+	filterConfig.FilterBank				= USE_FILTER_BANK;
 	filterConfig.FilterMode				= CAN_FILTER_MODE_IDMASK;
 	filterConfig.FilterScale			= CAN_FILTERSCALE_32BIT;
 	filterConfig.FilterActivation		= CAN_FILTER_ENABLE;
+	filterConfig.SlaveStartFilterBank	= 7U;
 	CAN_filtersConfig(USE_CAN, &filterConfig);
 
 	CAN_enable(USE_CAN);
@@ -356,11 +367,11 @@ static void bxCAN_init(void)
  */
 void CAN_initGlobalInterrupts(void)
 {
-	MISC_NVIC_setPriority(CAN1_TX_IRQn, CAN_TX_PREEMPPRIORITY, CAN_TX_SUBPRIORITY);
-	MISC_NVIC_enableIRQ(CAN1_TX_IRQn);
+	MISC_NVIC_setPriority(CAN_TX_IRQn, CAN_TX_PREEMPPRIORITY, CAN_TX_SUBPRIORITY);
+	MISC_NVIC_enableIRQ(CAN_TX_IRQn);
 
-	MISC_NVIC_setPriority(CAN1_RX0_IRQn, CAN_RX0_PREEMPPRIORITY, CAN_RX0_SUBPRIORITY);
-	MISC_NVIC_enableIRQ(CAN1_RX0_IRQn);
+	MISC_NVIC_setPriority(CAN_RX0_IRQn, CAN_RX0_PREEMPPRIORITY, CAN_RX0_SUBPRIORITY);
+	MISC_NVIC_enableIRQ(CAN_RX0_IRQn);
 }
 
 /**
