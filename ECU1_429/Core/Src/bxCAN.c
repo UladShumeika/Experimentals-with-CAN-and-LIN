@@ -213,7 +213,60 @@ void bxCAN_sendMessages(void const *argument)
   */
 void timeoutTimer_Callback(void const *argument)
 {
-	J1939_states result = *(J1939_states*)pvTimerGetTimerID((TimerHandle_t)argument);
+	J1939_states state = *(J1939_states*)pvTimerGetTimerID((TimerHandle_t)argument);
+
+	switch(state)
+	{
+		case J1939_STATE_TP_TX_BROADCAST:
+			xTaskNotify(sendMessagesHandle, (uint32_t)J1939_NOTIFICATION_DATA, eSetBits);
+			break;
+
+		case J1939_STATE_TP_RX_BROADCAST:
+			J1939_freeAllocatedMemory();
+			J1939_clearTPstructures();
+			J1939_state = J1939_STATE_NORMAL;
+			break;
+
+		case J1939_STATE_TP_TX_PTP_CTS:
+			J1939_setAbortReason(J1939_REASON_TIMEOUT, J1939_USE_CURRENT_DA);
+			J1939_clearTPstructures();
+			J1939_state = J1939_STATE_NORMAL;
+
+			xTaskNotify(sendMessagesHandle, (uint32_t)J1939_NOTIFICATION_ABORT, eSetBits);
+			break;
+
+		case J1939_STATE_TP_TX_PTP_DATA:
+			xTaskNotify(sendMessagesHandle, (uint32_t)J1939_NOTIFICATION_DATA, eSetBits);
+			break;
+
+		case J1939_STATE_TP_TX_PTP_EOM:
+			J1939_setAbortReason(J1939_REASON_TIMEOUT, J1939_USE_CURRENT_DA);
+			J1939_clearTPstructures();
+			J1939_state = J1939_STATE_NORMAL;
+
+			xTaskNotify(sendMessagesHandle, (uint32_t)J1939_NOTIFICATION_ABORT, eSetBits);
+			break;
+
+		case J1939_STATE_TP_RX_PTP_CTS:
+			xTaskNotify(sendMessagesHandle, (uint32_t)J1939_NOTIFICATION_CTS, eSetBits);
+			break;
+
+		case J1939_STATE_TP_RX_PTP_DATA:
+			J1939_setAbortReason(J1939_REASON_TIMEOUT, J1939_USE_CURRENT_DA);
+			J1939_freeAllocatedMemory();
+			J1939_clearTPstructures();
+			J1939_state = J1939_STATE_NORMAL;
+
+			xTaskNotify(sendMessagesHandle, (uint32_t)J1939_NOTIFICATION_ABORT, eSetBits);
+			break;
+
+		case J1939_STATE_TP_RX_PTP_EOM:
+			xTaskNotify(sendMessagesHandle, (uint32_t)J1939_NOTIFICATION_BAM, eSetBits);
+			break;
+
+		default:
+			break;
+	}
 }
 
 /**
