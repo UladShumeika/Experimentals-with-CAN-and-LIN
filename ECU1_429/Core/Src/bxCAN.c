@@ -124,6 +124,7 @@ void bxCAN_receiveMessages(void const *argument)
 void bxCAN_sendMessages(void const *argument)
 {
 	uint32_t notifiedValue;
+	J1939_message *message;
 	J1939_status status = J1939_STATUS_DATA_CONTINUE;
 
 	// Infinite loop
@@ -131,55 +132,77 @@ void bxCAN_sendMessages(void const *argument)
 	{
 		xTaskNotifyWait(0, ULONG_MAX, &notifiedValue, portMAX_DELAY);
 
-//		switch(notifiedValue)
-//		{
-//			case J1939_NOTIFICATION_TP_DATA_TRANSFER:
-//				if(J1939_STATE_TP_SENDING_BROADCAST)
-//				{
-//					status = J1939_sendTP_dataTransfer(J1939_BROADCAST_ADDRESS);
-//				} else
-//				{
-//					//J1939_sendTP_dataTransfer(destinationAddress);
-//				}
-//
-//				if(status == J1939_STATUS_DATA_CONTINUE)
-//				{
-//					osTimerStart(timeoutTimerHandle, J1939_MESSAGE_PACKET_FREQ);
-//				} else
-//				{
-//					J1939_state = J1939_STATE_NORMAL;
-//					J1939_cleanTPstructures();
-//				}
-//				break;
-//
-//			case J1939_NOTIFICATION_TP_CM_Abort:
-//				// send Abort
-//				break;
-//
-//			case J1939_NOTIFICATION_TP_CM_BAM:
-//				J1939_sendTP_connectionManagement(J1939_BROADCAST_ADDRESS);
-//				osTimerStart(timeoutTimerHandle, J1939_MESSAGE_PACKET_FREQ);
-//				break;
-//
-//			case J1939_NOTIFICATION_TP_CM_CTS:
-//				// send CTS
-//				break;
-//
-//			case J1939_NOTIFICATION_TP_CM_RTS:
-//				// send RTS
-//				break;
-//
-//			case J1939_NOTIFICATION_TP_CM_EndOfMsgACK:
-//				// send END
-//				break;
-//
-//			case J1939_NOTIFICATION_NORMAL:
-//				CAN_addTxMessage(USE_CAN, &txData.txMessage, txData.data);
-//				break;
-//
-//			default:
-//				break;
-//		}
+		switch(notifiedValue)
+		{
+			case J1939_NOTIFICATION_BAM:
+				J1939_sendTP_connectionManagement(J1939_TP_TYPE_BAM);
+				osTimerStart(timeoutTimerHandle, J1939_MESSAGE_PACKET_FREQ);
+				break;
+
+			case J1939_NOTIFICATION_RTS:
+				J1939_sendTP_connectionManagement(J1939_TP_TYPE_RTS);
+				osTimerStart(timeoutTimerHandle, J1939_MESSAGE_CM_TIMEOUT);
+				break;
+
+			case J1939_NOTIFICATION_CTS:
+				J1939_sendTP_connectionManagement(J1939_TP_TYPE_CTS);
+				J1939_state = J1939_STATE_TP_RX_PTP_DATA;
+				osTimerStart(timeoutTimerHandle, J1939_MESSAGE_CM_TIMEOUT);
+				break;
+
+			case J1939_NOTIFICATION_EOM:
+				J1939_sendTP_connectionManagement(J1939_TP_TYPE_END_OF_MSG);
+
+				message = (J1939_message*)osPoolCAlloc(J1939_messageStructureHandle);
+
+				message->message = J1939_getReceivedMessage();
+				message->sizeMessage = strlen((char*)message->message);
+
+				J1939_clearTPstructures();
+				J1939_state = J1939_STATE_NORMAL;
+
+				osMessagePut(fromCanToApplicationHandle, (uint32_t)message, osWaitForever);
+				break;
+
+			case J1939_NOTIFICATION_ABORT:
+				J1939_sendTP_connectionManagement(J1939_TP_TYPE_ABORT);
+				break;
+
+			case J1939_NOTIFICATION_DATA:
+				status = J1939_sendTP_dataTransfer();
+
+				switch(status)
+				{
+					case J1939_STATUS_DATA_FINISHED:
+
+						if(J1939_state == J1939_STATE_TP_TX_PTP_DATA)
+						{
+							J1939_state = J1939_STATE_TP_TX_PTP_EOM;
+							osTimerStart(timeoutTimerHandle, J1939_MESSAGE_CM_TIMEOUT);
+						} else
+						{
+							J1939_clearTPstructures();
+							J1939_state = J1939_STATE_NORMAL;
+						}
+						break;
+
+					case J1939_STATUS_DATA_CONTINUE:
+						osTimerStart(timeoutTimerHandle, J1939_MESSAGE_PACKET_FREQ);
+						break;
+
+					case J1939_STATUS_CTS:
+						J1939_state = J1939_STATE_TP_TX_PTP_CTS;
+						osTimerStart(timeoutTimerHandle, J1939_MESSAGE_CM_TIMEOUT);
+						break;
+
+					default:
+						break;
+				}
+				break;
+
+			default:
+				break;
+		}
 	}
 }
 
