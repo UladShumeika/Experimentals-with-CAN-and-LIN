@@ -78,6 +78,7 @@
 static osThreadId sendMessagesHandle;
 static osThreadId receiveMessagesHandle;
 static osTimerId timeoutTimerHandle;
+osPoolId J1939_messageStructureHandle;
 
 //---------------------------------------------------------------------------
 // Structure definitions
@@ -394,6 +395,11 @@ void bxCAN_freeRtosInit(void)
 	// definition and creation of the timeout timer for J1939 TP messages
 	osTimerDef(Timeout, timeoutTimer_Callback);
 	timeoutTimerHandle = osTimerCreate(osTimer(Timeout), osTimerOnce, (void *)&J1939_state);
+
+	// Create the memory pool(s)
+	// definition and creating of messageStructHandle
+	osPoolDef(messagePool, 1, J1939_message);
+	J1939_messageStructureHandle = osPoolCreate(osPool(messagePool));
 }
 
 //---------------------------------------------------------------------------
