@@ -78,6 +78,7 @@
 static osThreadId sendMessagesHandle;
 static osThreadId receiveMessagesHandle;
 static osTimerId timeoutTimerHandle;
+osMessageQId fromCanToApplicationHandle;
 osPoolId J1939_messageStructureHandle;
 
 //---------------------------------------------------------------------------
@@ -395,6 +396,11 @@ void bxCAN_freeRtosInit(void)
 	// definition and creation of the timeout timer for J1939 TP messages
 	osTimerDef(Timeout, timeoutTimer_Callback);
 	timeoutTimerHandle = osTimerCreate(osTimer(Timeout), osTimerOnce, (void *)&J1939_state);
+
+	// Create the queue(s)
+	// definition and creating of the queue for sending data from J1939 protocol to the application.
+	osMessageQDef(fromCanToApplication, 1, J1939_message);
+	fromCanToApplicationHandle = osMessageCreate(osMessageQ(fromCanToApplication), NULL);
 
 	// Create the memory pool(s)
 	// definition and creating of messageStructHandle
