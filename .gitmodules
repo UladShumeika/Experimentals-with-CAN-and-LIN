@@ -1,6 +1,6 @@
-[submodule "ECU1_429/Drivers/STM32F4xx_customLibrary"]
-	path = ECU1_429/Drivers/STM32F4xx_customLibrary
-	url = git@github.com:UladShumeika/STM32F4xx_customLibrary.git
-[submodule "ECU1_429/Drivers/SAE_J1939"]
-	path = ECU1_429/Drivers/SAE_J1939
+[submodule "ECUs/Drivers/SAE_J1939"]
+	path = ECUs/Drivers/SAE_J1939
 	url = git@github.com:UladShumeika/SAE_J1939.git
+[submodule "ECUs/Drivers/STM32F4xx_customLibrary"]
+	path = ECUs/Drivers/STM32F4xx_customLibrary
+	url = git@github.com:UladShumeika/STM32F4xx_customLibrary.git
