@@ -261,7 +261,7 @@ void timeoutTimer_Callback(void const *argument)
 			break;
 
 		case J1939_STATE_TP_RX_PTP_EOM:
-			xTaskNotify(sendMessagesHandle, (uint32_t)J1939_NOTIFICATION_BAM, eSetBits);
+			xTaskNotify(sendMessagesHandle, (uint32_t)J1939_NOTIFICATION_EOM, eSetBits);
 			break;
 
 		default:
