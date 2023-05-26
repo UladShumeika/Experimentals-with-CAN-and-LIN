@@ -285,8 +285,8 @@ void applicationTask(void const *argument)
 	uint16_t dataSize = strlen((char*)testData);
 	uint32_t PGN = 0xFEFE;
 
-	J1939_sendMessage(testData, dataSize, J1939_BROADCAST_ADDRESS, PGN);
-//	J1939_sendMessage(testData, dataSize, ECU1_ADDRESS, PGN);
+//	J1939_sendMessage(testData, dataSize, J1939_BROADCAST_ADDRESS, PGN);
+	J1939_sendMessage(testData, dataSize, ECU1_ADDRESS, PGN);
 #endif
 
 	for(;;)
