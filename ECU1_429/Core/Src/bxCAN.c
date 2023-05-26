@@ -423,6 +423,7 @@ void J1939_messagesProcessing(void)
 						break;
 
 					case J1939_STATUS_GOT_RTS_MESSAGE:
+						J1939_setDestinationAddress(sourceAddress);
 						J1939_state = J1939_STATE_TP_RX_PTP_CTS;
 						osTimerStart(timeoutTimerHandle, J1939_MESSAGE_PACKET_FREQ);
 						break;
