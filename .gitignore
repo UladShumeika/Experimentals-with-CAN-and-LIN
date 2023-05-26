@@ -2,4 +2,7 @@
 ECU1_429/Debug/
 ECU2_407/Debug/
 
+ECUs/STM32F429ZITX/
+ECUs/STM32F407VGTX/
+
 *.launch
