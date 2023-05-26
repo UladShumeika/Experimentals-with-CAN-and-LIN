@@ -17,14 +17,19 @@
 
 #if defined(STM32F429xx)
 	#define CURRENT_ECU_ADDRESS					(101U)
+	#define ECU2_ADDRESS						(202U)
 
 	#define USE_CAN								(CAN1)
 	#define USE_CAN_FIFO						(CAN_FILTER_FIFO_0)
+	#define USE_FILTER_BANK						(0U)
 
 	#define CAN_BAUDRATE_PRESCALER				(10U)			// Bit rate 250 kbit/s at PCLK1 = 45 MHz
 	#define CAN_TIME_SEGMENT_1					(CAN_TS1_TQ15)
 	#define CAN_TIME_SEGMENT_2					(CAN_TS2_TQ2)
 	#define CAN_RESYCH_JUMP_WIDTH				(CAN_SJW_TQ1)
+
+	#define CAN_TX_IRQn							(CAN1_TX_IRQn)
+	#define CAN_RX0_IRQn						(CAN1_RX0_IRQn)
 
 	#define CAN_TX_PREEMPPRIORITY				(5U)
 	#define CAN_TX_SUBPRIORITY					(0U)
@@ -34,14 +39,19 @@
 
 #elif defined(STM32F407xx)
 	#define CURRENT_ECU_ADDRESS					(202U)
+	#define ECU1_ADDRESS						(101U)
 
 	#define USE_CAN								(CAN2)
 	#define USE_CAN_FIFO						(CAN_FILTER_FIFO_0)
+	#define USE_FILTER_BANK						(15U)
 
 	#define CAN_BAUDRATE_PRESCALER				(12U)			// Bit rate 250 kbit/s at PCLK1 = 42 MHz
 	#define CAN_TIME_SEGMENT_1					(CAN_TS1_TQ11)
 	#define CAN_TIME_SEGMENT_2					(CAN_TS2_TQ2)
 	#define CAN_RESYCH_JUMP_WIDTH				(CAN_SJW_TQ1)
+
+	#define CAN_TX_IRQn							(CAN2_TX_IRQn)
+	#define CAN_RX0_IRQn						(CAN2_RX0_IRQn)
 
 	#define CAN_TX_PREEMPPRIORITY				(5U)
 	#define CAN_TX_SUBPRIORITY					(0U)
@@ -52,22 +62,14 @@
 #endif
 
 //---------------------------------------------------------------------------
-// Defines
-//---------------------------------------------------------------------------
-#define J1939_MESSAGE_PACKET_FREQ				(125U) // from 50 to 200 ms
-#define J1939_MESSAGE_TIMEOUT					(750U)
-
-#define J1939_BROADCAST_ADDRESS					(255U)
-
-#define J1939_CONNECTION_MANAGEMENT				(0xECU)
-#define J1939_DATA_TRANSFER						(0xEBU)
-
-//---------------------------------------------------------------------------
 // Descriptions of FreeRTOS elements
 //---------------------------------------------------------------------------
 static osThreadId sendMessagesHandle;
 static osThreadId receiveMessagesHandle;
+static osThreadId applicationHandle;
 static osTimerId timeoutTimerHandle;
+osMessageQId fromCanToApplicationHandle;
+osPoolId J1939_messageStructureHandle;
 
 //---------------------------------------------------------------------------
 // Structure definitions
@@ -110,10 +112,7 @@ void bxCAN_receiveMessages(void const *argument)
 	{
 		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
-		if(J1939_state != J1939_STATE_UNINIT)
-		{
-			J1939_messagesProcessing();
-		}
+		J1939_messagesProcessing();
 	}
 }
 
@@ -125,6 +124,7 @@ void bxCAN_receiveMessages(void const *argument)
 void bxCAN_sendMessages(void const *argument)
 {
 	uint32_t notifiedValue;
+	J1939_message *message;
 	J1939_status status = J1939_STATUS_DATA_CONTINUE;
 
 	// Infinite loop
@@ -134,48 +134,70 @@ void bxCAN_sendMessages(void const *argument)
 
 		switch(notifiedValue)
 		{
-			case J1939_NOTIFICATION_TP_DATA_TRANSFER:
-				if(J1939_STATE_TP_SENDING_BROADCAST)
-				{
-					status = J1939_sendTP_dataTransfer(J1939_BROADCAST_ADDRESS);
-				} else
-				{
-					//J1939_sendTP_dataTransfer(destinationAddress);
-				}
-
-				if(status == J1939_STATUS_DATA_CONTINUE)
-				{
-					osTimerStart(timeoutTimerHandle, J1939_MESSAGE_PACKET_FREQ);
-				} else
-				{
-					J1939_state = J1939_STATE_NORMAL;
-					J1939_cleanTPstructures();
-				}
-				break;
-
-			case J1939_NOTIFICATION_TP_CM_Abort:
-				// send Abort
-				break;
-
-			case J1939_NOTIFICATION_TP_CM_BAM:
-				J1939_sendTP_connectionManagement(J1939_BROADCAST_ADDRESS);
+			case J1939_NOTIFICATION_BAM:
+				J1939_sendTP_connectionManagement(J1939_TP_TYPE_BAM);
 				osTimerStart(timeoutTimerHandle, J1939_MESSAGE_PACKET_FREQ);
 				break;
 
-			case J1939_NOTIFICATION_TP_CM_CTS:
-				// send CTS
+			case J1939_NOTIFICATION_RTS:
+				J1939_sendTP_connectionManagement(J1939_TP_TYPE_RTS);
+				osTimerStart(timeoutTimerHandle, J1939_MESSAGE_CM_TIMEOUT);
 				break;
 
-			case J1939_NOTIFICATION_TP_CM_RTS:
-				// send RTS
+			case J1939_NOTIFICATION_CTS:
+				J1939_sendTP_connectionManagement(J1939_TP_TYPE_CTS);
+				J1939_state = J1939_STATE_TP_RX_PTP_DATA;
+				osTimerStart(timeoutTimerHandle, J1939_MESSAGE_CM_TIMEOUT);
 				break;
 
-			case J1939_NOTIFICATION_TP_CM_EndOfMsgACK:
-				// send END
+			case J1939_NOTIFICATION_EOM:
+				J1939_sendTP_connectionManagement(J1939_TP_TYPE_END_OF_MSG);
+
+				message = (J1939_message*)osPoolCAlloc(J1939_messageStructureHandle);
+
+				message->message = J1939_getReceivedMessage();
+				message->sizeMessage = strlen((char*)message->message);
+
+				J1939_clearTPstructures();
+				J1939_state = J1939_STATE_NORMAL;
+
+				osMessagePut(fromCanToApplicationHandle, (uint32_t)message, osWaitForever);
 				break;
 
-			case J1939_NOTIFICATION_NORMAL:
-				CAN_addTxMessage(USE_CAN, &txData.txMessage, txData.data);
+			case J1939_NOTIFICATION_ABORT:
+				J1939_sendTP_connectionManagement(J1939_TP_TYPE_ABORT);
+				break;
+
+			case J1939_NOTIFICATION_DATA:
+				status = J1939_sendTP_dataTransfer();
+
+				switch(status)
+				{
+					case J1939_STATUS_DATA_FINISHED:
+
+						if(J1939_state == J1939_STATE_TP_TX_PTP_DATA)
+						{
+							J1939_state = J1939_STATE_TP_TX_PTP_EOM;
+							osTimerStart(timeoutTimerHandle, J1939_MESSAGE_CM_TIMEOUT);
+						} else
+						{
+							J1939_clearTPstructures();
+							J1939_state = J1939_STATE_NORMAL;
+						}
+						break;
+
+					case J1939_STATUS_DATA_CONTINUE:
+						osTimerStart(timeoutTimerHandle, J1939_MESSAGE_PACKET_FREQ);
+						break;
+
+					case J1939_STATUS_CTS:
+						J1939_state = J1939_STATE_TP_TX_PTP_CTS;
+						osTimerStart(timeoutTimerHandle, J1939_MESSAGE_CM_TIMEOUT);
+						break;
+
+					default:
+						break;
+				}
 				break;
 
 			default:
@@ -191,22 +213,91 @@ void bxCAN_sendMessages(void const *argument)
   */
 void timeoutTimer_Callback(void const *argument)
 {
-	J1939_states result = *(J1939_states*)pvTimerGetTimerID((TimerHandle_t)argument);
+	J1939_states state = *(J1939_states*)pvTimerGetTimerID((TimerHandle_t)argument);
 
-	switch(result)
+	switch(state)
 	{
-		case J1939_STATE_TP_RECEIVING_BROADCAST:
-		case J1939_STATE_TP_RECEIVING_PEER_TO_PEER:
-			xTaskNotify(sendMessagesHandle, (uint32_t)J1939_NOTIFICATION_TP_CM_Abort, eSetBits);
+		case J1939_STATE_TP_TX_BROADCAST:
+			xTaskNotify(sendMessagesHandle, (uint32_t)J1939_NOTIFICATION_DATA, eSetBits);
 			break;
 
-		case J1939_STATE_TP_SENDING_BROADCAST:
-		case J1939_STATE_TP_SENDING_PEER_TO_PEER:
-			xTaskNotify(sendMessagesHandle, (uint32_t)J1939_NOTIFICATION_TP_DATA_TRANSFER, eSetBits);
+		case J1939_STATE_TP_RX_BROADCAST:
+			J1939_freeAllocatedMemory();
+			J1939_clearTPstructures();
+			J1939_state = J1939_STATE_NORMAL;
+			break;
+
+		case J1939_STATE_TP_TX_PTP_CTS:
+			J1939_setAbortReason(J1939_REASON_TIMEOUT, J1939_USE_CURRENT_DA);
+			J1939_clearTPstructures();
+			J1939_state = J1939_STATE_NORMAL;
+
+			xTaskNotify(sendMessagesHandle, (uint32_t)J1939_NOTIFICATION_ABORT, eSetBits);
+			break;
+
+		case J1939_STATE_TP_TX_PTP_DATA:
+			xTaskNotify(sendMessagesHandle, (uint32_t)J1939_NOTIFICATION_DATA, eSetBits);
+			break;
+
+		case J1939_STATE_TP_TX_PTP_EOM:
+			J1939_setAbortReason(J1939_REASON_TIMEOUT, J1939_USE_CURRENT_DA);
+			J1939_clearTPstructures();
+			J1939_state = J1939_STATE_NORMAL;
+
+			xTaskNotify(sendMessagesHandle, (uint32_t)J1939_NOTIFICATION_ABORT, eSetBits);
+			break;
+
+		case J1939_STATE_TP_RX_PTP_CTS:
+			xTaskNotify(sendMessagesHandle, (uint32_t)J1939_NOTIFICATION_CTS, eSetBits);
+			break;
+
+		case J1939_STATE_TP_RX_PTP_DATA:
+			J1939_setAbortReason(J1939_REASON_TIMEOUT, J1939_USE_CURRENT_DA);
+			J1939_freeAllocatedMemory();
+			J1939_clearTPstructures();
+			J1939_state = J1939_STATE_NORMAL;
+
+			xTaskNotify(sendMessagesHandle, (uint32_t)J1939_NOTIFICATION_ABORT, eSetBits);
+			break;
+
+		case J1939_STATE_TP_RX_PTP_EOM:
+			xTaskNotify(sendMessagesHandle, (uint32_t)J1939_NOTIFICATION_BAM, eSetBits);
 			break;
 
 		default:
 			break;
+	}
+}
+
+/**
+  * @brief 	Function implementing the application thread.
+  * @param	argument - Not used.
+  * @retval	None.
+  */
+void applicationTask(void const *argument)
+{
+	osEvent evt;
+	J1939_message *message;
+
+#if defined(STM32F407xx)
+
+	uint8_t testData[] = "This is test message for TP..";
+	uint16_t dataSize = strlen((char*)testData);
+	uint32_t PGN = 0xFEFE;
+
+//	J1939_sendMessage(testData, dataSize, J1939_BROADCAST_ADDRESS, PGN);
+	J1939_sendMessage(testData, dataSize, ECU1_ADDRESS, PGN);
+#endif
+
+	for(;;)
+	{
+		evt = osMessageGet(fromCanToApplicationHandle, osWaitForever);
+
+		if(evt.status == osEventMessage)
+		{
+			message = evt.value.p;
+			(void)message;
+		}
 	}
 }
 
@@ -222,20 +313,20 @@ void timeoutTimer_Callback(void const *argument)
  */
 void J1939_sendMessage(uint8_t* data, uint16_t dataSize, uint8_t destinationAddress, uint32_t PGN)
 {
-	if(dataSize > 8)
+	if(dataSize > 8U)
 	{
 		if(destinationAddress == J1939_BROADCAST_ADDRESS)
 		{
-			J1939_fillTPstructures(data, dataSize, PGN, J1939_CONTROL_BYTE_TP_CM_BAM);
-			J1939_state = J1939_STATE_TP_SENDING_BROADCAST;
+			J1939_state = J1939_STATE_TP_TX_BROADCAST;
+			J1939_fillTPstructures(data, dataSize, PGN, destinationAddress);
 
-			xTaskNotify(sendMessagesHandle, J1939_NOTIFICATION_TP_CM_BAM, eSetBits);
+			xTaskNotify(sendMessagesHandle, J1939_NOTIFICATION_BAM, eSetBits);
 		} else	// peer-to-peer connection
 		{
-			J1939_fillTPstructures(data, dataSize, PGN, J1939_CONTROL_BYTE_TP_CM_RTS);
-			J1939_state = J1939_STATE_TP_SENDING_PEER_TO_PEER;
+			J1939_state = J1939_STATE_TP_TX_PTP_CTS;
+			J1939_fillTPstructures(data, dataSize, PGN, destinationAddress);
 
-			xTaskNotify(sendMessagesHandle, J1939_NOTIFICATION_TP_CM_RTS, eSetBits);
+			xTaskNotify(sendMessagesHandle, J1939_NOTIFICATION_RTS, eSetBits);
 		}
 	} else
 	{
@@ -257,48 +348,133 @@ void J1939_sendMessage(uint8_t* data, uint16_t dataSize, uint8_t destinationAddr
  */
 void J1939_messagesProcessing(void)
 {
-	J1939_status status = J1939_STATUS_OK;
+	J1939_status status = J1939_NO_STATUS;
+	J1939_message *message;
 	USH_CAN_rxHeaderTypeDef rxMessage = {0};
 	uint8_t data[8] = {0};
-	uint8_t pduFormat = 0, destinAddress = 0;
+	uint8_t pduFormat = 0, destinAddress = 0, sourceAddress = 0;
 
-	CAN_getRxMessage(USE_CAN, USE_CAN_FIFO, &rxMessage, data);
-
-	pduFormat = (uint8_t)(rxMessage.ExtId >> 16U);
-//	uint8_t pages = (uint8_t)(rxMessage->ExtId >> 24U) & J1939_PRIORITY_MASK;
-	destinAddress = (uint8_t)(rxMessage.ExtId >> 8U);
-//	uint8_t sourceAddress = (uint8_t)rxMessage->ExtId;
-
-	// Process message when the CAN bus and the J1939 protocol is initialized
+	// Get and process a message when the CAN bus and the J1939 protocol is initialized
 	if(J1939_state != J1939_STATE_UNINIT)
 	{
+		CAN_getRxMessage(USE_CAN, USE_CAN_FIFO, &rxMessage, data);
+
+		pduFormat = (uint8_t)(rxMessage.ExtId >> 16U);
+		destinAddress = (uint8_t)(rxMessage.ExtId >> 8U);
+		sourceAddress = (uint8_t)rxMessage.ExtId;
+
 		// Process message when destination address is J1939_BROADCAST_ADDRESS or CURRENT_ECU_ADDRESS
 		if((destinAddress == J1939_BROADCAST_ADDRESS) || (destinAddress == CURRENT_ECU_ADDRESS))
 		{
 			if(pduFormat == J1939_CONNECTION_MANAGEMENT)
 			{
 				status = J1939_readTP_connectionManagement(data);
-				if(status == J1939_STATUS_OK)
-				{
-					// Start timeout timer
-					osTimerStart(timeoutTimerHandle, J1939_MESSAGE_TIMEOUT);
-				} else if((status == J1939_STATUS_DATA_ABORT) && ((J1939_state == J1939_STATE_TP_SENDING_BROADCAST) || \
-						                                          (J1939_state == J1939_STATE_TP_SENDING_PEER_TO_PEER)))
-				{
-					J1939_state = J1939_STATE_NORMAL;
-					J1939_cleanTPstructures();
-				}
 
+				switch(status)
+				{
+					case J1939_STATUS_GOT_BAM_MESSAGE:
+						J1939_state = J1939_STATE_TP_RX_BROADCAST;
+						osTimerStart(timeoutTimerHandle, J1939_MESSAGE_DATA_TIMEOUT);
+						break;
+
+					case J1939_ERROR_BUSY:
+						if(J1939_state >= J1939_STATE_TP_RX_PTP_CTS)
+						{
+							J1939_setAbortReason(J1939_REASON_BUSY, sourceAddress);
+							xTaskNotify(sendMessagesHandle, J1939_NOTIFICATION_ABORT, eSetBits);
+						}
+						break;
+
+					case J1939_ERROR_MEMORY_ALLOCATION:
+						J1939_clearTPstructures();
+
+						if(destinAddress != J1939_BROADCAST_ADDRESS)
+						{
+							J1939_setAbortReason(J1939_REASON_MEMORY_ALLOCATION_ERROR, sourceAddress);
+							xTaskNotify(sendMessagesHandle, J1939_NOTIFICATION_ABORT, eSetBits);
+						}
+						break;
+
+					case J1939_ERROR_TOO_BIG_MESSAGE:
+						J1939_clearTPstructures();
+
+						if(destinAddress != J1939_BROADCAST_ADDRESS)
+						{
+							J1939_setAbortReason(J1939_REASON_TOO_BIG_MESSAGE, sourceAddress);
+							xTaskNotify(sendMessagesHandle, J1939_NOTIFICATION_ABORT, eSetBits);
+						}
+						break;
+
+					case J1939_STATUS_GOT_ABORT_SESSION:
+						if(J1939_state >= J1939_STATE_TP_RX_PTP_CTS)
+						{
+							J1939_clearTPstructures();
+							J1939_state = J1939_STATE_NORMAL;
+						}
+						break;
+
+					case J1939_STATUS_GOT_CTS_MESSAGE:
+						J1939_state = J1939_STATE_TP_TX_PTP_DATA;
+						osTimerStart(timeoutTimerHandle, J1939_MESSAGE_PACKET_FREQ);
+						break;
+
+					case J1939_STATUS_GOT_EOM_MESSAGE:
+						if(J1939_state == J1939_STATE_TP_TX_PTP_EOM) J1939_state = J1939_STATE_NORMAL;
+						break;
+
+					case J1939_STATUS_GOT_RTS_MESSAGE:
+						J1939_setDestinationAddress(sourceAddress);
+						J1939_state = J1939_STATE_TP_RX_PTP_CTS;
+						osTimerStart(timeoutTimerHandle, J1939_MESSAGE_PACKET_FREQ);
+						break;
+
+					default:
+						break;
+				}
 			} else if(pduFormat == J1939_DATA_TRANSFER)
 			{
-				// Stop timeout timer
-				osTimerStop(timeoutTimerHandle);
+				if((J1939_state == J1939_STATE_TP_RX_BROADCAST) || (J1939_state == J1939_STATE_TP_RX_PTP_DATA))
+				{
+					// Stop timeout timer
+					osTimerStop(timeoutTimerHandle);
 
-				// Read the receiving data
-				status = J1939_readTP_dataTransfer(data);
+					// Read the receiving data
+					status = J1939_readTP_dataTransfer(data);
 
-				// If the receiving data isn't finished, start timeout timer
-				if(status == J1939_STATUS_DATA_CONTINUE) osTimerStart(timeoutTimerHandle, J1939_MESSAGE_TIMEOUT);
+					switch(status)
+					{
+						case J1939_STATUS_DATA_CONTINUE:
+							osTimerStart(timeoutTimerHandle, J1939_MESSAGE_DATA_TIMEOUT);
+							break;
+
+						case J1939_STATUS_DATA_FINISHED:
+							if(J1939_state == J1939_STATE_TP_RX_PTP_DATA)
+							{
+								J1939_state = J1939_STATE_TP_RX_PTP_EOM;
+								osTimerStart(timeoutTimerHandle, J1939_MESSAGE_PACKET_FREQ);
+							} else
+							{
+								message = (J1939_message*)osPoolCAlloc(J1939_messageStructureHandle);
+
+								message->message = J1939_getReceivedMessage();
+								message->sizeMessage = strlen((char*)message->message);
+
+								J1939_clearTPstructures();
+								J1939_state = J1939_STATE_NORMAL;
+
+								osMessagePut(fromCanToApplicationHandle, (uint32_t)message, osWaitForever);
+							}
+							break;
+
+						case J1939_STATUS_CTS:
+							J1939_state = J1939_STATE_TP_RX_PTP_CTS;
+							osTimerStart(timeoutTimerHandle, J1939_MESSAGE_PACKET_FREQ);
+							break;
+
+						default:
+							break;
+					}
+				}
 			}
 		}
 	}
@@ -335,7 +511,7 @@ static void bxCAN_init(void)
 	filterConfig.FilterMaskIdHigh		= 0x0000U;
 	filterConfig.FilterMaskIdLow		= 0x0000U;
 	filterConfig.FilterFIFOAssignment	= USE_CAN_FIFO;
-	filterConfig.FilterBank				= 15U;
+	filterConfig.FilterBank				= USE_FILTER_BANK;
 	filterConfig.FilterMode				= CAN_FILTER_MODE_IDMASK;
 	filterConfig.FilterScale			= CAN_FILTERSCALE_32BIT;
 	filterConfig.FilterActivation		= CAN_FILTER_ENABLE;
@@ -357,11 +533,11 @@ static void bxCAN_init(void)
  */
 void CAN_initGlobalInterrupts(void)
 {
-	MISC_NVIC_setPriority(CAN2_TX_IRQn, CAN_TX_PREEMPPRIORITY, CAN_TX_SUBPRIORITY);
-	MISC_NVIC_enableIRQ(CAN2_TX_IRQn);
+	MISC_NVIC_setPriority(CAN_TX_IRQn, CAN_TX_PREEMPPRIORITY, CAN_TX_SUBPRIORITY);
+	MISC_NVIC_enableIRQ(CAN_TX_IRQn);
 
-	MISC_NVIC_setPriority(CAN2_RX0_IRQn, CAN_RX0_PREEMPPRIORITY, CAN_RX0_SUBPRIORITY);
-	MISC_NVIC_enableIRQ(CAN2_RX0_IRQn);
+	MISC_NVIC_setPriority(CAN_RX0_IRQn, CAN_RX0_PREEMPPRIORITY, CAN_RX0_SUBPRIORITY);
+	MISC_NVIC_enableIRQ(CAN_RX0_IRQn);
 }
 
 /**
@@ -380,10 +556,24 @@ void bxCAN_freeRtosInit(void)
 	osThreadDef(receiveMessages, bxCAN_receiveMessages, osPriorityBelowNormal, 0, 128);
 	receiveMessagesHandle = osThreadCreate(osThread(receiveMessages), NULL);
 
+	// definition and creation of the application thread
+	osThreadDef(application, applicationTask, osPriorityLow, 0, 128);
+	applicationHandle = osThreadCreate(osThread(application), NULL);
+
 	// Create the timer(s)
 	// definition and creation of the timeout timer for J1939 TP messages
 	osTimerDef(Timeout, timeoutTimer_Callback);
 	timeoutTimerHandle = osTimerCreate(osTimer(Timeout), osTimerOnce, (void *)&J1939_state);
+
+	// Create the queue(s)
+	// definition and creating of the queue for sending data from J1939 protocol to the application.
+	osMessageQDef(fromCanToApplication, 1, J1939_message);
+	fromCanToApplicationHandle = osMessageCreate(osMessageQ(fromCanToApplication), NULL);
+
+	// Create the memory pool(s)
+	// definition and creating of messageStructHandle
+	osPoolDef(messagePool, 1, J1939_message);
+	J1939_messageStructureHandle = osPoolCreate(osPool(messagePool));
 }
 
 //---------------------------------------------------------------------------
