@@ -5,4 +5,6 @@ ECU2_407/Debug/
 ECUs/STM32F429ZITX/
 ECUs/STM32F407VGTX/
 
+ECUs/.settings/
+
 *.launch
