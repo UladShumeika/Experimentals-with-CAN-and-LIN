@@ -34,6 +34,7 @@ static osThreadId m_eeprom_read_write_memory_handle = {0};
 // Static functions declaration
 //---------------------------------------------------------------------------
 static void eeprom_read_write_memory_task(void const *p_argument);
+static uint32_t eeprom_init_gpio(void);
 
 //---------------------------------------------------------------------------
 // API
@@ -72,4 +73,32 @@ static void eeprom_read_write_memory_task(void const *p_argument)
 	{
 
 	}
+}
+
+/*!
+ * @brief Initialize GPIO peripherals for EEPROM memory.
+ *
+ * @return @ref PRJ_STATUS_OK if GPIO initialization was successful.
+ * @return @ref PRJ_STATUS_ERROR if there are problems with the input parameters.
+ */
+static uint32_t eeprom_init_gpio(void)
+{
+	uint32_t status = PRJ_STATUS_OK;
+	USH_GPIO_initTypeDef gpio_init = {0};
+
+	/* Enable GPIOF clock */
+	__RCC_GPIOF_CLOCK_ENABLE();
+
+	/* I2C2 GPIO pins configuration
+	   PF0	  ------> I2C_SDA
+	   PF1    ------> I2C_SCL */
+	gpio_init.GPIOx 		= GPIOF;
+	gpio_init.Pin 			= (GPIO_PIN_0 | GPIO_PIN_1);
+	gpio_init.Mode			= GPIO_MODE_ALTERNATE_OD;
+	gpio_init.Pull			= GPIO_NOPULL;
+	gpio_init.Speed			= GPIO_SPEED_VERY_HIGH;
+	gpio_init.Alternate 	= GPIO_AF4_I2C2;
+	status = GPIO_init(&gpio_init);
+
+	return status;
 }
