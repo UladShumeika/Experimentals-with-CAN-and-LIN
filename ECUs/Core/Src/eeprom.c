@@ -33,6 +33,7 @@ static osThreadId m_eeprom_read_write_memory_handle = {0};
 
 static prj_dma_handler_t m_dma_tx = {0};
 static prj_dma_handler_t m_dma_rx = {0};
+static prj_i2c_init_t m_i2c_init = {0};
 
 //---------------------------------------------------------------------------
 // Variables
@@ -45,6 +46,7 @@ static void eeprom_read_write_memory_task(void const *p_argument);
 
 static uint32_t eeprom_init_gpio(void);
 static uint32_t eeprom_init_dma(void);
+static uint32_t eeprom_init_i2c(void);
 
 //---------------------------------------------------------------------------
 // API
@@ -159,6 +161,34 @@ static uint32_t eeprom_init_dma(void)
 	m_dma_rx.dma_init.priority					= PRJ_DMA_PRIORITY_LOW;
 	m_dma_rx.dma_init.fifo_mode					= PRJ_DMA_FIFO_MODE_DISABLE;
 	status = prj_dma_init(&m_dma_rx);
+
+	return status;
+}
+
+/*!
+ * @brief Initialize I2C peripherals for EEPROM memory.
+ *
+ * @return @ref PRJ_STATUS_OK if I2C initialization was successful.
+ * @return @ref PRJ_STATUS_ERROR if there are problems with the input parameters.
+ */
+static uint32_t eeprom_init_i2c(void)
+{
+	uint32_t status = PRJ_STATUS_OK;
+
+	/* Enable I2C2 clock */
+	__RCC_I2C2_CLOCK_ENABLE();
+
+	/* I2C init */
+	m_i2c_init.p_i2c				= I2C2;
+	m_i2c_init.clock_speed			= 400000U;
+	m_i2c_init.duty_cycle			= PRJ_I2C_DUTYCYCLE_2;
+	m_i2c_init.own_address_1		= 0U;
+	m_i2c_init.addressing_mode		= PRJ_I2C_ADDRESSING_MODE_7BIT;
+	m_i2c_init.dual_address_mode 	= PRJ_I2C_DUAL_ADDRESS_DISABLE;
+	m_i2c_init.own_address_2		= 0U;
+	m_i2c_init.general_call_mode	= PRJ_I2C_GENERAL_CALL_DISABLE;
+	m_i2c_init.nostretch_mode		= PRJ_I2C_NOSTRETCH_DISABLE;
+	status = prj_i2c_init(&m_i2c_init);
 
 	return status;
 }
