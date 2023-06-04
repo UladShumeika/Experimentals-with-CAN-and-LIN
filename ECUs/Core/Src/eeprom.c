@@ -44,6 +44,7 @@ static prj_i2c_init_t m_i2c_init = {0};
 //---------------------------------------------------------------------------
 static void eeprom_read_write_memory_task(void const *p_argument);
 
+static uint32_t eeprom_init_auxiliary_peripherals(void);
 static uint32_t eeprom_init_gpio(void);
 static uint32_t eeprom_init_dma(void);
 static uint32_t eeprom_init_i2c(void);
@@ -85,6 +86,48 @@ static void eeprom_read_write_memory_task(void const *p_argument)
 	{
 
 	}
+}
+
+/*!
+ * @brief Initialize auxiliary peripherals for EEPROM memory.
+ *
+ * This function is used to initialize peripherals for work with EEPROM memory.
+ * (GPIO, DMA, I2C and interrupts)
+ *
+ * @return @ref PRJ_STATUS_OK if GPIO initialization was successful.
+ * @return @ref PRJ_STATUS_ERROR if there are problems with the input parameters.
+ */
+static uint32_t eeprom_init_auxiliary_peripherals(void)
+{
+	uint32_t status = PRJ_STATUS_OK;
+
+	/* -------------------------- GPIO configuration -------------------------- */
+
+	status = eeprom_init_gpio();
+
+	/* -------------------------- DMA configuration --------------------------- */
+
+	if(status == PRJ_STATUS_OK)
+	{
+		status = eeprom_init_dma();
+	}
+	else
+	{
+		; /* DO NOTHING */
+	}
+
+	/* -------------------------- I2C configuration --------------------------- */
+
+	if(status == PRJ_STATUS_OK)
+	{
+		status = eeprom_init_i2c();
+	}
+	else
+	{
+		; /* DO NOTHING */
+	}
+
+	return status;
 }
 
 /*!
