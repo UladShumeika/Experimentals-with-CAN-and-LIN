@@ -287,10 +287,6 @@ typedef enum
  #include "stm32f4xx_hal.h"
 #endif /* USE_HAL_DRIVER */
 
-#if defined (USE_CUSTOM_DRIVER)
- #include "ush_stm32f4xx_conf.h"
-#endif /* USE_CUSTOM_DRIVER */
-
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
