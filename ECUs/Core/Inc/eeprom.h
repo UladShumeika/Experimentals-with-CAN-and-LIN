@@ -32,4 +32,13 @@
 // API
 //---------------------------------------------------------------------------
 
+/*!
+ * @brief Initialize FreeRTOS objects.
+ *
+ * This function is used to initialize FreeRTOS objects (threads, queues, sems and etc.).
+ *
+ * @return None.
+ */
+void prj_eeprom_freertos_init(void);
+
 #endif /* __eeprom_h */
