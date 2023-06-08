@@ -191,9 +191,9 @@ static uint32_t eeprom_init_dma(void)
 	/* DMA rx init */
 	m_dma_rx.p_dma_stream						= DMA1_Stream2;
 	m_dma_rx.dma_init.channel					= PRJ_DMA_CHANNEL_7;
-	m_dma_rx.dma_init.direction					= PRJ_DMA_MEMORY_TO_PERIPH;
-	m_dma_rx.dma_init.periph_inc				= PRJ_DMA_PINC_ENABLE;
-	m_dma_rx.dma_init.mem_inc					= PRJ_DMA_MINC_DISABLE;
+	m_dma_rx.dma_init.direction					= PRJ_DMA_PERIPH_TO_MEMORY;
+	m_dma_rx.dma_init.periph_inc				= PRJ_DMA_PINC_DISABLE;
+	m_dma_rx.dma_init.mem_inc					= PRJ_DMA_MINC_ENABLE;
 	m_dma_rx.dma_init.periph_data_alignment		= PRJ_DMA_PERIPH_SIZE_BYTE;
 	m_dma_rx.dma_init.mem_data_alignment		= PRJ_DMA_MEMORY_SIZE_BYTE;
 	m_dma_rx.dma_init.mode						= PRJ_DMA_NORMAL_MODE;
