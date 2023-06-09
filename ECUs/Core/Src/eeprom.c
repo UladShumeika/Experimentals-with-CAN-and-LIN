@@ -12,6 +12,8 @@
 // Includes
 //---------------------------------------------------------------------------
 #include "eeprom.h"
+#include "24lc256.h"
+#include "string.h"
 
 //---------------------------------------------------------------------------
 // Definitions
@@ -64,9 +66,14 @@ static prj_dma_handler_t m_dma_tx = {0};
 static prj_dma_handler_t m_dma_rx = {0};
 static prj_i2c_init_t m_i2c_init = {0};
 
+static prj_i2c_transmission_t m_i2c_rx = {0};
+static prj_i2c_transmission_t m_i2c_tx = {0};
+
 //---------------------------------------------------------------------------
 // Variables
 //---------------------------------------------------------------------------
+static uint8_t data_write 	= 0x04U;
+static uint8_t data_read 	= 0x00U;
 
 //---------------------------------------------------------------------------
 // Static functions declaration
@@ -142,10 +149,39 @@ void prj_eeprom_i2c_dma_tx_irq_handler(void)
  */
 static void eeprom_read_write_memory_task(void const *p_argument)
 {
+	uint32_t status = PRJ_STATUS_OK;
+
+	eeprom_init_auxiliary_peripherals();
+
+	m_i2c_tx.p_i2c				= PRJ_EEPROM_I2C_USE;
+	m_i2c_tx.dev_address		= PRJ_EEPROM_I2C_DEVICE_ADDRESS;
+	m_i2c_tx.mem_address		= 0x6B;
+	m_i2c_tx.mem_address_size	= PRJ_I2C_MEM_ADDRESS_SIZE_8BIT;
+	m_i2c_tx.p_data				= &data_write;
+	m_i2c_tx.data_size 			= sizeof(data_write);
+
+	m_i2c_tx.p_dma					= &m_dma_tx;
+	m_dma_tx.p_controls_peripherals = (void*)&m_i2c_tx;
+
+	m_i2c_rx.p_i2c				= PRJ_EEPROM_I2C_USE;
+	m_i2c_rx.dev_address		= PRJ_EEPROM_I2C_DEVICE_ADDRESS;
+	m_i2c_rx.mem_address		= 0x6B;
+	m_i2c_rx.mem_address_size	= PRJ_I2C_MEM_ADDRESS_SIZE_8BIT;
+	m_i2c_rx.p_data				= &data_read;
+	m_i2c_rx.data_size 			= sizeof(data_read);
+
+	m_i2c_rx.p_dma					= &m_dma_rx;
+	m_dma_rx.p_controls_peripherals = (void*)&m_i2c_rx;
+
+	status = prj_i2c_write_dma(&m_i2c_tx);
+	status = prj_i2c_read_dma(&m_i2c_rx);
+
+	macro_prj_common_unused(status);
+
 	/* Infinite loop */
 	for(;;)
 	{
-
+		osDelay(1);
 	}
 }
 

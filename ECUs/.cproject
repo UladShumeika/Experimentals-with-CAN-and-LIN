@@ -50,6 +50,7 @@
 									<listOptionValue builtIn="false" value="../Drivers/CMSIS/Core_cm"/>
 									<listOptionValue builtIn="false" value="../Drivers/CMSIS/Device"/>
 									<listOptionValue builtIn="false" value="../Drivers/CMSIS/Device/STM32429ZITX"/>
+									<listOptionValue builtIn="false" value="../Drivers/24LC256/Inc"/>
 									<listOptionValue builtIn="false" value="../Drivers/STM32F4xx_customLibrary"/>
 									<listOptionValue builtIn="false" value="../Drivers/STM32F4xx_customLibrary/Inc"/>
 									<listOptionValue builtIn="false" value="../Drivers/SAE_J1939/SAE_J1939_21_Transport_Layer/Inc"/>
