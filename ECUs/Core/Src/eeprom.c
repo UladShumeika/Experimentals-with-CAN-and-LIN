@@ -16,11 +16,44 @@
 //---------------------------------------------------------------------------
 // Definitions
 //---------------------------------------------------------------------------
-#define PRJ_EEPROM_DMA_TX_PREEMPTION_PRIORITY					(5U)
-#define PRJ_EEPROM_DMA_TX_SUBPRIORITY							(0U)
 
-#define PRJ_EEPROM_DMA_RX_PREEMPTION_PRIORITY					(5U)
-#define PRJ_EEPROM_DMA_RX_SUBPRIORITY							(0U)
+/* NOTE: When changing the I2C configuration, it is necessary to check
+         the configuration of gpio, dma and global interrupts. */
+
+#if defined(STM32F429xx)
+	#define PRJ_EEPROM_I2C_USE										(I2C2)
+	#define PRJ_EEPROM_I2C_CLOCK_SPEED								(400000U)
+
+	#define PRJ_EEPROM_I2C_DEVICE_ADDRESS							(0x68U)
+	#define PRJ_EEPROM_I2C_DEVICE_ADDRESS_SIZE						(PRJ_I2C_ADDRESSING_MODE_7BIT)
+
+	#define PRJ_EEPROM_I2C_CLOCK_ENABLE								__RCC_I2C2_CLOCK_ENABLE
+	#define PRJ_EEPROM_DMA_CLOCK_ENABLE								__RCC_DMA1_CLOCK_ENABLE
+
+	#define PRJ_EEPROM_DMA_STREAM_TX								DMA1_Stream7
+	#define PRJ_EEPROM_DMA_CHANNEL_TX								PRJ_DMA_CHANNEL_7
+
+	#define PRJ_EEPROM_DMA_STREAM_RX								DMA1_Stream2
+	#define PRJ_EEPROM_DMA_CHANNEL_RX								PRJ_DMA_CHANNEL_7
+
+	#define PRJ_EEPROM_DMA_STREAM_TX_IRQN							DMA1_Stream7_IRQn
+	#define PRJ_EEPROM_DMA_STREAM_RX_IRQN							DMA1_Stream2_IRQn
+	#define PRJ_EEPROM_I2C_EV_IRQN									I2C2_EV_IRQn
+	#define PRJ_EEPROM_I2C_ER_IRQN									I2C2_ER_IRQn
+
+	#define PRJ_EEPROM_DMA_TX_PREEMPTION_PRIORITY					(5U)
+	#define PRJ_EEPROM_DMA_TX_SUBPRIORITY							(1U)
+
+	#define PRJ_EEPROM_DMA_RX_PREEMPTION_PRIORITY					(5U)
+	#define PRJ_EEPROM_DMA_RX_SUBPRIORITY							(0U)
+
+	#define PRJ_EEPROM_I2C_EV_PREEMPTION_PRIORITY					(5U)
+	#define PRJ_EEPROM_I2C_EV_SUBPRIORITY							(2U)
+
+	#define PRJ_EEPROM_I2C_ER_PREEMPTION_PRIORITY					(5U)
+	#define PRJ_EEPROM_I2C_ER_SUBPRIORITY							(1U)
+
+#endif
 
 //---------------------------------------------------------------------------
 // Types
@@ -164,16 +197,16 @@ static uint32_t eeprom_init_dma(void)
 {
 	uint32_t status = PRJ_STATUS_OK;
 
-	/* Enable DMA1 clock */
-	__RCC_DMA1_CLOCK_ENABLE();
+	/* Enable DMA clock */
+	PRJ_EEPROM_DMA_CLOCK_ENABLE();
 
 	/* DMA tx interrupt init */
-	MISC_NVIC_setPriority(DMA1_Stream7_IRQn, PRJ_EEPROM_DMA_TX_PREEMPTION_PRIORITY, PRJ_EEPROM_DMA_TX_SUBPRIORITY);
-	MISC_NVIC_enableIRQ(DMA1_Stream7_IRQn);
+	MISC_NVIC_setPriority(PRJ_EEPROM_DMA_STREAM_TX_IRQN, PRJ_EEPROM_DMA_TX_PREEMPTION_PRIORITY, PRJ_EEPROM_DMA_TX_SUBPRIORITY);
+	MISC_NVIC_enableIRQ(PRJ_EEPROM_DMA_STREAM_TX_IRQN);
 
 	/* DMA tx init */
-	m_dma_tx.p_dma_stream						= DMA1_Stream7;
-	m_dma_tx.dma_init.channel					= PRJ_DMA_CHANNEL_7;
+	m_dma_tx.p_dma_stream						= PRJ_EEPROM_DMA_STREAM_TX;
+	m_dma_tx.dma_init.channel					= PRJ_EEPROM_DMA_CHANNEL_TX;
 	m_dma_tx.dma_init.direction					= PRJ_DMA_MEMORY_TO_PERIPH;
 	m_dma_tx.dma_init.periph_inc				= PRJ_DMA_PINC_DISABLE;
 	m_dma_tx.dma_init.mem_inc					= PRJ_DMA_MINC_ENABLE;
@@ -185,12 +218,12 @@ static uint32_t eeprom_init_dma(void)
 	status = prj_dma_init(&m_dma_tx);
 
 	/* DMA rx interrupt init */
-	MISC_NVIC_setPriority(DMA1_Stream2_IRQn, PRJ_EEPROM_DMA_RX_PREEMPTION_PRIORITY, PRJ_EEPROM_DMA_RX_SUBPRIORITY);
-	MISC_NVIC_enableIRQ(DMA1_Stream2_IRQn);
+	MISC_NVIC_setPriority(PRJ_EEPROM_DMA_STREAM_RX_IRQN, PRJ_EEPROM_DMA_RX_PREEMPTION_PRIORITY, PRJ_EEPROM_DMA_RX_SUBPRIORITY);
+	MISC_NVIC_enableIRQ(PRJ_EEPROM_DMA_STREAM_RX_IRQN);
 
 	/* DMA rx init */
-	m_dma_rx.p_dma_stream						= DMA1_Stream2;
-	m_dma_rx.dma_init.channel					= PRJ_DMA_CHANNEL_7;
+	m_dma_rx.p_dma_stream						= PRJ_EEPROM_DMA_STREAM_RX;
+	m_dma_rx.dma_init.channel					= PRJ_EEPROM_DMA_CHANNEL_RX;
 	m_dma_rx.dma_init.direction					= PRJ_DMA_PERIPH_TO_MEMORY;
 	m_dma_rx.dma_init.periph_inc				= PRJ_DMA_PINC_DISABLE;
 	m_dma_rx.dma_init.mem_inc					= PRJ_DMA_MINC_ENABLE;
@@ -214,15 +247,15 @@ static uint32_t eeprom_init_i2c(void)
 {
 	uint32_t status = PRJ_STATUS_OK;
 
-	/* Enable I2C2 clock */
-	__RCC_I2C2_CLOCK_ENABLE();
+	/* Enable I2C clock */
+	PRJ_EEPROM_I2C_CLOCK_ENABLE();
 
 	/* I2C init */
-	m_i2c_init.p_i2c				= I2C2;
-	m_i2c_init.clock_speed			= 400000U;
+	m_i2c_init.p_i2c				= PRJ_EEPROM_I2C_USE;
+	m_i2c_init.clock_speed			= PRJ_EEPROM_I2C_CLOCK_SPEED;
 	m_i2c_init.duty_cycle			= PRJ_I2C_DUTYCYCLE_2;
 	m_i2c_init.own_address_1		= 0U;
-	m_i2c_init.addressing_mode		= PRJ_I2C_ADDRESSING_MODE_7BIT;
+	m_i2c_init.addressing_mode		= PRJ_EEPROM_I2C_DEVICE_ADDRESS_SIZE;
 	m_i2c_init.dual_address_mode 	= PRJ_I2C_DUAL_ADDRESS_DISABLE;
 	m_i2c_init.own_address_2		= 0U;
 	m_i2c_init.general_call_mode	= PRJ_I2C_GENERAL_CALL_DISABLE;
