@@ -97,6 +97,38 @@ void prj_eeprom_freertos_init(void)
 	m_eeprom_read_write_memory_handle = osThreadCreate(osThread(read_write_eeprom), NULL);
 }
 
+/*!
+ * @brief Handle i2c event interrupt.
+ */
+void prj_eeprom_i2c_ev_irq_handler(void)
+{
+	prj_i2c_irq_handler(m_i2c_rx.p_i2c);
+}
+
+/*!
+ * @brief Handle i2c error interrupt.
+ */
+void prj_eeprom_i2c_er_irq_handler(void)
+{
+
+}
+
+/*!
+ * @brief Handle dma stream rx global interrupt.
+ */
+void prj_eeprom_i2c_dma_rx_irq_handler(void)
+{
+	prj_dma_irq_handler(&m_dma_rx);
+}
+
+/*!
+ * @brief Handle dma stream tx global interrupt.
+ */
+void prj_eeprom_i2c_dma_tx_irq_handler(void)
+{
+	prj_dma_irq_handler(&m_dma_tx);
+}
+
 //---------------------------------------------------------------------------
 // STATIC
 //---------------------------------------------------------------------------
