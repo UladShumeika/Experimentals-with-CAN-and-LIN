@@ -262,5 +262,13 @@ static uint32_t eeprom_init_i2c(void)
 	m_i2c_init.nostretch_mode		= PRJ_I2C_NOSTRETCH_DISABLE;
 	status = prj_i2c_init(&m_i2c_init);
 
+	/* I2C EV interrupt init */
+	MISC_NVIC_setPriority(PRJ_EEPROM_I2C_EV_IRQN, PRJ_EEPROM_I2C_EV_PREEMPTION_PRIORITY, PRJ_EEPROM_I2C_EV_SUBPRIORITY);
+	MISC_NVIC_enableIRQ(PRJ_EEPROM_I2C_EV_IRQN);
+
+	/* I2C ER interrupt init */
+	MISC_NVIC_setPriority(PRJ_EEPROM_I2C_ER_IRQN, PRJ_EEPROM_I2C_ER_PREEMPTION_PRIORITY, PRJ_EEPROM_I2C_ER_SUBPRIORITY);
+	MISC_NVIC_enableIRQ(PRJ_EEPROM_I2C_ER_IRQN);
+
 	return status;
 }
