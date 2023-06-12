@@ -47,6 +47,21 @@ typedef struct
 
 } prj_24lc256_dma_handlers_t;
 
+/*!
+ * @brief Memory system parameters structure definition.
+ */
+typedef struct
+{
+	uint8_t buffer_index;				/*!< Index of the status and parameter buffers */
+
+	uint8_t entry_number;				/*!< Memory entry number */
+
+	uint8_t reserved1; 					/*!< For structure size alignment. */
+
+	uint8_t reserved2; 					/*!< For structure size alignment. */
+
+} prj_24lc256_system_t;
+
 //---------------------------------------------------------------------------
 // API
 //---------------------------------------------------------------------------
