@@ -76,6 +76,32 @@ static void eeprom_24lc256_status_buffer_index_get(uint8_t* data, uint8_t data_s
 //---------------------------------------------------------------------------
 
 /*!
+ * @brief Initialize 24lc256 memory.
+ *
+ * This function is used to capture status and parameter buffers.
+ *
+ * @param[in] dev_address	A target device address.
+ *
+ * @return None.
+ */
+void prj_eeprom_24lc256_init(uint8_t dev_address)
+{
+	/* Enable write protection */
+#if(PRJ_24LC256_WP_ENABLED == 1U)
+	eeprom_24lc256_write_protection(PRJ_STATE_ENABLE);
+#endif
+
+	/* Capture status buffer from memory */
+	prj_eeprom_24lc256_read_to_address(dev_address, PRJ_24LC256_DINAMIC_DATA_STATUS_SPACE_BEGIN, m_24lc256_status_buffer, PRJ_24LC256_DINAMIC_DATA_STATUS_SPACE_SIZE);
+
+	/* Capture parameter buffer from memory */
+	prj_eeprom_24lc256_read_to_address(dev_address, PRJ_24LC256_DINAMIC_DATA_PARAMETER_SPACE_BEGIN, m_24lc256_parameter_buffer, PRJ_24LC256_DINAMIC_DATA_PARAMETER_SPACE_SIZE);
+
+	/* Search for the index of the status buffer that contains the maximum value */
+	eeprom_24lc256_status_buffer_index_get(m_24lc256_status_buffer, PRJ_24LC256_DINAMIC_DATA_STATUS_SPACE_SIZE, &m_system);
+}
+
+/*!
  * @brief Check device availability on the bus.
  *
  * This function is used to check the specified device availability several times.

@@ -67,6 +67,17 @@ typedef struct
 //---------------------------------------------------------------------------
 
 /*!
+ * @brief Initialize 24lc256 memory.
+ *
+ * This function is used to capture status and parameter buffers.
+ *
+ * @param[in] dev_address	A target device address.
+ *
+ * @return None.
+ */
+void prj_eeprom_24lc256_init(uint8_t dev_address);
+
+/*!
  * @brief Check device availability on the bus.
  *
  * This function is used to check the specified device availability several times.
