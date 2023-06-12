@@ -20,6 +20,31 @@
 //---------------------------------------------------------------------------
 // Definitions
 //---------------------------------------------------------------------------
+#define PRJ_24LC256_PAGE_SIZE								(64U)
+#define PRJ_24LC256_MAX_MEM_ADDRESS							(32767U)
+
+/* Used to store data that is written only once and
+ * does not change during the operation of the device (64 bytes) */
+#define PRJ_24LC256_STATIC_DATA_SPACE_SIZE					(64U)
+#define PRJ_24LC256_STATIC_DATA_SPACE_BEGAN					(0x0000U)
+#define PRJ_24LC256_STATIC_DATA_SPACE_END					(0x003FU)
+
+/* The status buffer that stores a pointer to the index of the parameter buffer
+ * that already stores a pointer to the actual data (32 bytes) */
+#define PRJ_24LC256_DINAMIC_DATA_STATUS_SPACE_SIZE			(32U)
+#define PRJ_24LC256_DINAMIC_DATA_STATUS_SPACE_BEGAN			(0x0040U)
+#define PRJ_24LC256_DINAMIC_DATA_STATUS_SPACE_END			(0x005FU)
+
+/* The parameter buffer that stores a pointer to the actual data (32 bytes) */
+#define PRJ_24LC256_DINAMIC_DATA_PARAMETER_SPACE_SIZE		(32U)
+#define PRJ_24LC256_DINAMIC_DATA_PARAMETER_SPACE_BEGAN		(0x0060U)
+#define PRJ_24LC256_DINAMIC_DATA_PARAMETER_SPACE_END		(0x009FU)
+
+/* Used to store the actual data */
+#define PRJ_24LC256_DINAMIC_DATA_SPACE_SIZE					(32608U)
+#define PRJ_24LC256_DINAMIC_DATA_SPACE_BEGAN				(0x00A0U)
+#define PRJ_24LC256_DINAMIC_DATA_SPACE_END					(PRJ_24LC256_MAX_MEM_ADDRESS)
+
 #define PRJ_24LC256_TRIALS									(5U)
 
 //---------------------------------------------------------------------------
@@ -28,6 +53,12 @@
 static prj_24lc256_dma_handlers_t m_dma_handlers = {0};
 static prj_i2c_transmission_t m_i2c_tx = {0};
 static prj_i2c_transmission_t m_i2c_rx = {0};
+
+//---------------------------------------------------------------------------
+// Variables
+//---------------------------------------------------------------------------
+static uint8_t m_24lc256_status_buffer[PRJ_24LC256_DINAMIC_DATA_STATUS_SPACE_SIZE] = {0};
+static uint8_t m_24lc256_parameter_buffer[PRJ_24LC256_DINAMIC_DATA_PARAMETER_SPACE_SIZE] = {0};
 
 //---------------------------------------------------------------------------
 // Static functions declaration
