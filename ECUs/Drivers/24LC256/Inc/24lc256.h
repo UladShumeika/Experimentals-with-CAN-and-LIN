@@ -73,9 +73,11 @@ typedef struct
  *
  * @param[in] dev_address	A target device address.
  *
- * @return None.
+ * @return @ref PRJ_STATUS_OK if initialization was successful.
+ * @return @ref PRJ_STATUS_ERROR if the data was not read from memory.
+ * @return @ref PRJ_STATUS_TIMEOUT if a timeout is detected on any flag.
  */
-void prj_eeprom_24lc256_init(uint8_t dev_address);
+uint32_t prj_eeprom_24lc256_init(uint8_t dev_address);
 
 /*!
  * @brief Check device availability on the bus.

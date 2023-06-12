@@ -82,23 +82,49 @@ static void eeprom_24lc256_status_buffer_index_get(uint8_t* data, uint8_t data_s
  *
  * @param[in] dev_address	A target device address.
  *
- * @return None.
+ * @return @ref PRJ_STATUS_OK if initialization was successful.
+ * @return @ref PRJ_STATUS_ERROR if the data was not read from memory.
+ * @return @ref PRJ_STATUS_TIMEOUT if a timeout is detected on any flag.
  */
-void prj_eeprom_24lc256_init(uint8_t dev_address)
+uint32_t prj_eeprom_24lc256_init(uint8_t dev_address)
 {
+	uint32_t status = PRJ_STATUS_OK;
+
 	/* Enable write protection */
 #if(PRJ_24LC256_WP_ENABLED == 1U)
 	eeprom_24lc256_write_protection(PRJ_STATE_ENABLE);
 #endif
 
+	/* Fill in the general parameters */
+	m_i2c_rx.p_i2c				= PRJ_24LC256_I2C_USED;
+	m_i2c_rx.dev_address		= dev_address;
+	m_i2c_rx.mem_address_size	= PRJ_I2C_MEM_ADDRESS_SIZE_16BIT;
+
 	/* Capture status buffer from memory */
-	prj_eeprom_24lc256_read_to_address(dev_address, PRJ_24LC256_DINAMIC_DATA_STATUS_SPACE_BEGIN, m_24lc256_status_buffer, PRJ_24LC256_DINAMIC_DATA_STATUS_SPACE_SIZE);
+	m_i2c_rx.mem_address		= PRJ_24LC256_DINAMIC_DATA_STATUS_SPACE_BEGIN;
+	m_i2c_rx.p_data				= m_24lc256_status_buffer;
+	m_i2c_rx.data_size 			= PRJ_24LC256_DINAMIC_DATA_STATUS_SPACE_SIZE;
+	status = prj_i2c_read_dma(&m_i2c_rx);
 
 	/* Capture parameter buffer from memory */
-	prj_eeprom_24lc256_read_to_address(dev_address, PRJ_24LC256_DINAMIC_DATA_PARAMETER_SPACE_BEGIN, m_24lc256_parameter_buffer, PRJ_24LC256_DINAMIC_DATA_PARAMETER_SPACE_SIZE);
+	m_i2c_rx.mem_address		= PRJ_24LC256_DINAMIC_DATA_PARAMETER_SPACE_BEGIN;
+	m_i2c_rx.p_data				= m_24lc256_parameter_buffer;
+	m_i2c_rx.data_size 			= PRJ_24LC256_DINAMIC_DATA_PARAMETER_SPACE_SIZE;
+	status = prj_i2c_read_dma(&m_i2c_rx);
 
-	/* Search for the index of the status buffer that contains the maximum value */
-	eeprom_24lc256_status_buffer_index_get(m_24lc256_status_buffer, PRJ_24LC256_DINAMIC_DATA_STATUS_SPACE_SIZE, &m_system);
+	if(status == PRJ_STATUS_OK)
+	{
+		/* Search for the index of the status buffer that contains the maximum value */
+		eeprom_24lc256_status_buffer_index_get(m_24lc256_status_buffer,
+											   PRJ_24LC256_DINAMIC_DATA_STATUS_SPACE_SIZE,
+											   &m_system);
+	}
+	else
+	{
+		/* DO NOTHING */
+	}
+
+	return status;
 }
 
 /*!
