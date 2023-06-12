@@ -23,6 +23,13 @@
 #define PRJ_24LC256_TRIALS									(5U)
 
 //---------------------------------------------------------------------------
+// Types
+//---------------------------------------------------------------------------
+static prj_24lc256_dma_handlers_t m_dma_handlers = {0};
+static prj_i2c_transmission_t m_i2c_tx = {0};
+static prj_i2c_transmission_t m_i2c_rx = {0};
+
+//---------------------------------------------------------------------------
 // Static functions declaration
 //---------------------------------------------------------------------------
 #if(PRJ_24LC256_WP_ENABLED == 1U)
@@ -57,6 +64,31 @@ uint32_t prj_eeprom_24lc256_connect_test(uint16_t dev_address)
 	status = prj_i2c_is_device_ready(PRJ_24LC256_I2C_USED, dev_address, PRJ_24LC256_TRIALS);
 
 	return status;
+}
+
+/*!
+ * @brief Set dma handlers' pointers in 24LC256 structure.
+ *
+ * This function is used to get and to safe dma handlers' pointers and to link dma handlers and i2c transmission structures.
+ *
+ * @param[in] p_dma_tx		A ponter to dma tx handler.
+ * @param[in] p_dma_rx		A ponter to dma rx handler.
+ *
+ * @return None.
+ */
+void prj_eeprom_24lc256_dma_handlers_set(prj_dma_handler_t* p_dma_tx, prj_dma_handler_t* p_dma_rx)
+{
+	/* Set DMA handlers' pointers */
+	m_dma_handlers.p_dma_tx = p_dma_tx;
+	m_dma_handlers.p_dma_rx = p_dma_rx;
+
+	/* Link DMA tx handler and i2c tx transmission */
+	m_i2c_tx.p_dma										= m_dma_handlers.p_dma_tx;
+	m_dma_handlers.p_dma_tx->p_controls_peripherals 	= (void*)&m_i2c_tx;
+
+	/* Link DMA rx handler and i2c rx transmission */
+	m_i2c_rx.p_dma										= m_dma_handlers.p_dma_rx;
+	m_dma_handlers.p_dma_rx->p_controls_peripherals 	= (void*)&m_i2c_rx;
 }
 
 //---------------------------------------------------------------------------

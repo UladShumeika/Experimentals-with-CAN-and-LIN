@@ -66,4 +66,16 @@ typedef struct
  */
 uint32_t prj_eeprom_24lc256_connect_test(uint16_t dev_address);
 
+/*!
+ * @brief Set dma handlers' pointers in 24LC256 structure.
+ *
+ * This function is used to get and to safe dma handlers' pointers and to link dma handlers and i2c transmission structures.
+ *
+ * @param[in] p_dma_tx		A ponter to dma tx handler.
+ * @param[in] p_dma_rx		A ponter to dma rx handler.
+ *
+ * @return None.
+ */
+void prj_eeprom_24lc256_dma_handlers_set(prj_dma_handler_t* p_dma_tx, prj_dma_handler_t* p_dma_rx);
+
 #endif /* __24lc256_h */
