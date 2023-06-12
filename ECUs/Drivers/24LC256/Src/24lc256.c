@@ -25,7 +25,9 @@
 //---------------------------------------------------------------------------
 // Static functions declaration
 //---------------------------------------------------------------------------
-static void eeprom_24lc256_write_protection(uint32_t state);
+#if(PRJ_24LC256_WP_ENABLED == 1U)
+	static void eeprom_24lc256_write_protection(uint32_t state);
+#endif
 
 //---------------------------------------------------------------------------
 // API
@@ -70,6 +72,7 @@ uint32_t prj_eeprom_24lc256_connect_test(I2C_TypeDef* p_i2c, uint16_t dev_addres
 // STATIC
 //---------------------------------------------------------------------------
 
+#if(PRJ_24LC256_WP_ENABLED == 1U)
 /*!
  * @brief Enable or disable eeprom write protection.
  *
@@ -88,3 +91,4 @@ static void eeprom_24lc256_write_protection(uint32_t state)
 		GPIO_writeBits(PRJ_24LC256_WP_PORT, PRJ_24LC256_WP_PIN, GPIO_PIN_RESET);
 	}
 }
+#endif
