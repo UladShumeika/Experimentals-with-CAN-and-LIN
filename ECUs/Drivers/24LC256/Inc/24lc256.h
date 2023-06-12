@@ -64,7 +64,7 @@ typedef struct
  * 		   or the device is not detected.
  * @return @ref PRJ_STATUS_TIMEOUT if the timeout has passed.
  */
-uint32_t prj_eeprom_24lc256_connect_test(uint16_t dev_address);
+uint32_t prj_eeprom_24lc256_connect_test(uint8_t dev_address);
 
 /*!
  * @brief Set dma handlers' pointers in 24LC256 structure.

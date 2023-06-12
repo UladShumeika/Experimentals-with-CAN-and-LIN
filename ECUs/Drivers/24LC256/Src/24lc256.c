@@ -84,7 +84,7 @@ static uint8_t m_24lc256_parameter_buffer[PRJ_24LC256_DINAMIC_DATA_PARAMETER_SPA
  * 		   or the device is not detected.
  * @return @ref PRJ_STATUS_TIMEOUT if the timeout has passed.
  */
-uint32_t prj_eeprom_24lc256_connect_test(uint16_t dev_address)
+uint32_t prj_eeprom_24lc256_connect_test(uint8_t dev_address)
 {
 	uint32_t status = PRJ_STATUS_OK;
 
