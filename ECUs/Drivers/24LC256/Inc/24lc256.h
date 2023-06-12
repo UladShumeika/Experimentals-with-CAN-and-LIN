@@ -16,6 +16,7 @@
 // Includes
 //---------------------------------------------------------------------------
 #include "ush_stm32f4xx_gpio.h"
+#include "ush_stm32f4xx_dma.h"
 
 //---------------------------------------------------------------------------
 // Definitions
@@ -29,6 +30,22 @@
 	#define PRJ_24LC256_WP_PORT						 GPIOC
 	#define PRJ_24LC256_WP_PIN						 GPIO_PIN_14
 #endif
+
+//---------------------------------------------------------------------------
+// Types
+//---------------------------------------------------------------------------
+
+/*!
+ * @brief dma handlers' pointers structure definition.
+ * @note  This structure is needed to store pointers to dma handlers.
+ */
+typedef struct
+{
+	prj_dma_handler_t* p_dma_tx;		/*!< A pointer to dma tx handler */
+
+	prj_dma_handler_t* p_dma_rx;		/*!< A pointer to dma rx handler */
+
+} prj_24lc256_dma_handlers_t;
 
 //---------------------------------------------------------------------------
 // API
