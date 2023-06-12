@@ -40,7 +40,6 @@
  * This function is used to check the specified device availability several times.
  * The number of checks is defined in @ref PRJ_24LC256_TRIALS.
  *
- * @param[in] p_i2c			A pointer to I2Cx peripheral.
  * @param[in] dev_address	A target device address.
  *
  * @return @ref PRJ_STATUS_OK if the device is available.
@@ -48,6 +47,6 @@
  * 		   or the device is not detected.
  * @return @ref PRJ_STATUS_TIMEOUT if the timeout has passed.
  */
-uint32_t prj_eeprom_24lc256_connect_test(I2C_TypeDef* p_i2c, uint16_t dev_address);
+uint32_t prj_eeprom_24lc256_connect_test(uint16_t dev_address);
 
 #endif /* __24lc256_h */
