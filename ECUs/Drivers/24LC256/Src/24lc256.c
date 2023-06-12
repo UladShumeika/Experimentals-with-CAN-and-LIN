@@ -26,23 +26,23 @@
 /* Used to store data that is written only once and
  * does not change during the operation of the device (64 bytes) */
 #define PRJ_24LC256_STATIC_DATA_SPACE_SIZE					(64U)
-#define PRJ_24LC256_STATIC_DATA_SPACE_BEGAN					(0x0000U)
+#define PRJ_24LC256_STATIC_DATA_SPACE_BEGIN					(0x0000U)
 #define PRJ_24LC256_STATIC_DATA_SPACE_END					(0x003FU)
 
 /* The status buffer that stores a pointer to the index of the parameter buffer
  * that already stores a pointer to the actual data (32 bytes) */
 #define PRJ_24LC256_DINAMIC_DATA_STATUS_SPACE_SIZE			(32U)
-#define PRJ_24LC256_DINAMIC_DATA_STATUS_SPACE_BEGAN			(0x0040U)
+#define PRJ_24LC256_DINAMIC_DATA_STATUS_SPACE_BEGIN			(0x0040U)
 #define PRJ_24LC256_DINAMIC_DATA_STATUS_SPACE_END			(0x005FU)
 
 /* The parameter buffer that stores a pointer to the actual data (32 bytes) */
 #define PRJ_24LC256_DINAMIC_DATA_PARAMETER_SPACE_SIZE		(32U)
-#define PRJ_24LC256_DINAMIC_DATA_PARAMETER_SPACE_BEGAN		(0x0060U)
+#define PRJ_24LC256_DINAMIC_DATA_PARAMETER_SPACE_BEGIN		(0x0060U)
 #define PRJ_24LC256_DINAMIC_DATA_PARAMETER_SPACE_END		(0x009FU)
 
 /* Used to store the actual data */
 #define PRJ_24LC256_DINAMIC_DATA_SPACE_SIZE					(32608U)
-#define PRJ_24LC256_DINAMIC_DATA_SPACE_BEGAN				(0x00A0U)
+#define PRJ_24LC256_DINAMIC_DATA_SPACE_BEGIN				(0x00A0U)
 #define PRJ_24LC256_DINAMIC_DATA_SPACE_END					(PRJ_24LC256_MAX_MEM_ADDRESS)
 
 #define PRJ_24LC256_TRIALS									(5U)
@@ -54,6 +54,8 @@ static prj_24lc256_dma_handlers_t m_dma_handlers = {0};
 static prj_i2c_transmission_t m_i2c_tx = {0};
 static prj_i2c_transmission_t m_i2c_rx = {0};
 
+static prj_24lc256_system_t m_system = {0};
+
 //---------------------------------------------------------------------------
 // Variables
 //---------------------------------------------------------------------------
@@ -63,6 +65,8 @@ static uint8_t m_24lc256_parameter_buffer[PRJ_24LC256_DINAMIC_DATA_PARAMETER_SPA
 //---------------------------------------------------------------------------
 // Static functions declaration
 //---------------------------------------------------------------------------
+static void eeprom_24lc256_status_buffer_index_get(uint8_t* data, uint8_t data_size, prj_24lc256_system_t* system);
+
 #if(PRJ_24LC256_WP_ENABLED == 1U)
 	static void eeprom_24lc256_write_protection(uint32_t state);
 #endif
@@ -125,6 +129,48 @@ void prj_eeprom_24lc256_dma_handlers_set(prj_dma_handler_t* p_dma_tx, prj_dma_ha
 //---------------------------------------------------------------------------
 // STATIC
 //---------------------------------------------------------------------------
+
+/*!
+ * @brief Search for the index in the status buffer.
+ *
+ * This function is used to search for the index of the status buffer that contains the maximum value
+ * and to safe system parameters.
+ *
+ * @param[in] 	data		A pointer to the status buffer.
+ * @param[in]	data_size	The status buffer size.
+ * @param[out]	system		A pointer to the structure in which the system parameters will be stored.
+ *
+ * @return None.
+ */
+static void eeprom_24lc256_status_buffer_index_get(uint8_t* data, uint8_t data_size, prj_24lc256_system_t* system)
+{
+	uint8_t index = 0;
+	uint8_t max_value = data[0];
+
+	if((data != NULL) && (system != NULL))
+	{
+		for(uint8_t i = 1; i < data_size; i++)
+		{
+			if(max_value < data[i])
+			{
+				max_value = data[i];
+				index = i;
+			}
+			else
+			{
+				/* DO NOTHING */
+			}
+		}
+
+		/* Safe data */
+		system->buffer_index = index;
+		system->entry_number = max_value;
+	}
+	else
+	{
+		/* DO NOTHING */
+	}
+}
 
 #if(PRJ_24LC256_WP_ENABLED == 1U)
 /*!
