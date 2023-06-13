@@ -80,6 +80,19 @@ typedef struct
 uint32_t prj_eeprom_24lc256_init(uint8_t dev_address);
 
 /*!
+ * @brief Set dma handlers' pointers in 24LC256 structure.
+ *
+ * This function is used to get and to safe dma handlers' pointers and
+ * to link dma handlers and i2c transmission structures.
+ *
+ * @param[in] p_dma_tx		A pointer to dma tx handler.
+ * @param[in] p_dma_rx		A pointer to dma rx handler.
+ *
+ * @return None.
+ */
+void prj_eeprom_24lc256_dma_handlers_set(prj_dma_handler_t* p_dma_tx, prj_dma_handler_t* p_dma_rx);
+
+/*!
  * @brief Check device availability on the bus.
  *
  * This function is used to check the specified device availability several times.
@@ -138,17 +151,5 @@ uint32_t prj_eeprom_24lc256_read_static(uint8_t dev_address, void* data, uint8_t
  * @return @ref PRJ_STATUS_TIMEOUT if a timeout is detected on any flag.
  */
 uint32_t prj_eeprom_24lc256_write_static(uint8_t dev_address, void* data, uint8_t data_size);
-
-/*!
- * @brief Set dma handlers' pointers in 24LC256 structure.
- *
- * This function is used to get and to safe dma handlers' pointers and to link dma handlers and i2c transmission structures.
- *
- * @param[in] p_dma_tx		A ponter to dma tx handler.
- * @param[in] p_dma_rx		A ponter to dma rx handler.
- *
- * @return None.
- */
-void prj_eeprom_24lc256_dma_handlers_set(prj_dma_handler_t* p_dma_tx, prj_dma_handler_t* p_dma_rx);
 
 #endif /* __24lc256_h */

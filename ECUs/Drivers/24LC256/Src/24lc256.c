@@ -131,6 +131,31 @@ uint32_t prj_eeprom_24lc256_init(uint8_t dev_address)
 }
 
 /*!
+ * @brief Set dma handlers' pointers in 24LC256 structure.
+ *
+ * This function is used to get and to safe dma handlers' pointers and to link dma handlers and i2c transmission structures.
+ *
+ * @param[in] p_dma_tx		A ponter to dma tx handler.
+ * @param[in] p_dma_rx		A ponter to dma rx handler.
+ *
+ * @return None.
+ */
+void prj_eeprom_24lc256_dma_handlers_set(prj_dma_handler_t* p_dma_tx, prj_dma_handler_t* p_dma_rx)
+{
+	/* Set DMA handlers' pointers */
+	m_dma_handlers.p_dma_tx = p_dma_tx;
+	m_dma_handlers.p_dma_rx = p_dma_rx;
+
+	/* Link DMA tx handler and i2c tx transmission */
+	m_i2c_tx.p_dma										= m_dma_handlers.p_dma_tx;
+	m_dma_handlers.p_dma_tx->p_controls_peripherals 	= (void*)&m_i2c_tx;
+
+	/* Link DMA rx handler and i2c rx transmission */
+	m_i2c_rx.p_dma										= m_dma_handlers.p_dma_rx;
+	m_dma_handlers.p_dma_rx->p_controls_peripherals 	= (void*)&m_i2c_rx;
+}
+
+/*!
  * @brief Check device availability on the bus.
  *
  * This function is used to check the specified device availability several times.
@@ -310,31 +335,6 @@ uint32_t prj_eeprom_24lc256_write_static(uint8_t dev_address, void* data, uint8_
 #endif
 
 	return status;
-}
-
-/*!
- * @brief Set dma handlers' pointers in 24LC256 structure.
- *
- * This function is used to get and to safe dma handlers' pointers and to link dma handlers and i2c transmission structures.
- *
- * @param[in] p_dma_tx		A ponter to dma tx handler.
- * @param[in] p_dma_rx		A ponter to dma rx handler.
- *
- * @return None.
- */
-void prj_eeprom_24lc256_dma_handlers_set(prj_dma_handler_t* p_dma_tx, prj_dma_handler_t* p_dma_rx)
-{
-	/* Set DMA handlers' pointers */
-	m_dma_handlers.p_dma_tx = p_dma_tx;
-	m_dma_handlers.p_dma_rx = p_dma_rx;
-
-	/* Link DMA tx handler and i2c tx transmission */
-	m_i2c_tx.p_dma										= m_dma_handlers.p_dma_tx;
-	m_dma_handlers.p_dma_tx->p_controls_peripherals 	= (void*)&m_i2c_tx;
-
-	/* Link DMA rx handler and i2c rx transmission */
-	m_i2c_rx.p_dma										= m_dma_handlers.p_dma_rx;
-	m_dma_handlers.p_dma_rx->p_controls_peripherals 	= (void*)&m_i2c_rx;
 }
 
 //---------------------------------------------------------------------------
