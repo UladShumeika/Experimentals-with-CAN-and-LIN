@@ -16,6 +16,7 @@
 #include "24lc256.h"
 #include "ush_stm32f4xx_conf.h"
 #include <stddef.h>
+#include <string.h>
 
 //---------------------------------------------------------------------------
 // Definitions
@@ -46,6 +47,7 @@
 #define PRJ_24LC256_DINAMIC_DATA_SPACE_END					(PRJ_24LC256_MAX_MEM_ADDRESS)
 
 #define PRJ_24LC256_TRIALS									(5U)
+#define PRJ_24LC256_DELAY									(20U)
 
 //---------------------------------------------------------------------------
 // Types
@@ -61,6 +63,7 @@ static prj_24lc256_system_t m_system = {0};
 //---------------------------------------------------------------------------
 static uint8_t m_24lc256_status_buffer[PRJ_24LC256_DINAMIC_DATA_STATUS_SPACE_SIZE] = {0};
 static uint8_t m_24lc256_parameter_buffer[PRJ_24LC256_DINAMIC_DATA_PARAMETER_SPACE_SIZE] = {0};
+static uint8_t page_buffer[PRJ_24LC256_PAGE_SIZE] = {0};
 
 //---------------------------------------------------------------------------
 // Static functions declaration
@@ -149,6 +152,54 @@ uint32_t prj_eeprom_24lc256_connect_test(uint8_t dev_address)
 #endif
 
 	status = prj_i2c_is_device_ready(PRJ_24LC256_I2C_USED, dev_address, PRJ_24LC256_TRIALS);
+
+	return status;
+}
+
+/*!
+ * @brief Erase the memory
+ *
+ * This function is used to erase all memory.
+ *
+ * @param[in] dev_address	A target device address.
+ *
+ * @return @ref PRJ_STATUS_OK if memory clearing was successful.
+ * @return @ref PRJ_STATUS_ERROR if the device is not detected.
+ * @return @ref PRJ_STATUS_TIMEOUT if a timeout is detected on any flag.
+ */
+uint32_t prj_eeprom_24lc256_erase_memory(uint8_t dev_address)
+{
+	uint32_t status = PRJ_STATUS_OK;
+	uint16_t mem_address = 0x0000U;
+
+	/* Fill in the page buffer */
+	memset(page_buffer, 0xFFU, PRJ_24LC256_PAGE_SIZE);
+
+	/* Fill in the i2c tx structure */
+	m_i2c_tx.p_i2c				= PRJ_24LC256_I2C_USED;
+	m_i2c_tx.dev_address		= dev_address;
+	m_i2c_tx.mem_address_size	= PRJ_I2C_MEM_ADDRESS_SIZE_16BIT;
+	m_i2c_tx.p_data				= page_buffer;
+	m_i2c_tx.data_size 			= PRJ_24LC256_PAGE_SIZE;
+
+#if(PRJ_24LC256_WP_ENABLED == 1U)
+	eeprom_24lc256_write_protection(PRJ_STATE_DISABLE);
+#endif
+
+	/* Erase every memory page */
+	while((mem_address < PRJ_24LC256_MAX_MEM_ADDRESS) && (status == PRJ_STATUS_OK))
+	{
+		m_i2c_tx.mem_address = mem_address;
+		mem_address = mem_address + PRJ_24LC256_PAGE_SIZE;
+
+		status = prj_i2c_write_dma(&m_i2c_tx);
+
+		MISC_timeoutDelay(PRJ_24LC256_DELAY);
+	}
+
+#if(PRJ_24LC256_WP_ENABLED == 1U)
+	eeprom_24lc256_write_protection(PRJ_STATE_ENABLE);
+#endif
 
 	return status;
 }

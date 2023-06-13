@@ -95,6 +95,19 @@ uint32_t prj_eeprom_24lc256_init(uint8_t dev_address);
 uint32_t prj_eeprom_24lc256_connect_test(uint8_t dev_address);
 
 /*!
+ * @brief Erase the memory
+ *
+ * This function is used to erase all memory.
+ *
+ * @param[in] dev_address	A target device address.
+ *
+ * @return @ref PRJ_STATUS_OK if memory clearing was successful.
+ * @return @ref PRJ_STATUS_ERROR if the device is not detected.
+ * @return @ref PRJ_STATUS_TIMEOUT if a timeout is detected on any flag.
+ */
+uint32_t prj_eeprom_24lc256_erase_memory(uint8_t dev_address);
+
+/*!
  * @brief Set dma handlers' pointers in 24LC256 structure.
  *
  * This function is used to get and to safe dma handlers' pointers and to link dma handlers and i2c transmission structures.
