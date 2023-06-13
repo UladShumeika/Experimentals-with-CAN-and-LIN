@@ -95,7 +95,7 @@ uint32_t prj_eeprom_24lc256_init(uint8_t dev_address);
 uint32_t prj_eeprom_24lc256_connect_test(uint8_t dev_address);
 
 /*!
- * @brief Erase the memory
+ * @brief Erase the memory.
  *
  * This function is used to erase all memory.
  *
@@ -106,6 +106,22 @@ uint32_t prj_eeprom_24lc256_connect_test(uint8_t dev_address);
  * @return @ref PRJ_STATUS_TIMEOUT if a timeout is detected on any flag.
  */
 uint32_t prj_eeprom_24lc256_erase_memory(uint8_t dev_address);
+
+/*!
+ * @brief Read the data in the static data space.
+ *
+ * This function is used to read data in the static space.
+ *
+ * @param[in]  dev_address	A target device address.
+ * @param[out] data			A pointer to the array in which to store the data.
+ * @param[in]  data_size	Size of the array.
+ *
+ * @return @ref PRJ_STATUS_OK if memory reading was successful.
+ * @return @ref PRJ_STATUS_ERROR if the device is not detected or the pointer is NULL or
+ * 		   array size is larger than static data space.
+ * @return @ref PRJ_STATUS_TIMEOUT if a timeout is detected on any flag.
+ */
+uint32_t prj_eeprom_24lc256_read_static(uint8_t dev_address, void* data, uint8_t data_size);
 
 /*!
  * @brief Set dma handlers' pointers in 24LC256 structure.

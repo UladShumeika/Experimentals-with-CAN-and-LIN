@@ -205,6 +205,57 @@ uint32_t prj_eeprom_24lc256_erase_memory(uint8_t dev_address)
 }
 
 /*!
+ * @brief Read the data in the static data space.
+ *
+ * This function is used to read data in the static space.
+ *
+ * @param[in]  dev_address	A target device address.
+ * @param[out] data			A pointer to the array in which to store the data.
+ * @param[in]  data_size	Size of the array.
+ *
+ * @return @ref PRJ_STATUS_OK if memory reading was successful.
+ * @return @ref PRJ_STATUS_ERROR if the device is not detected or the pointer is NULL or
+ * 		   array size is larger than static data space.
+ * @return @ref PRJ_STATUS_TIMEOUT if a timeout is detected on any flag.
+ */
+uint32_t prj_eeprom_24lc256_read_static(uint8_t dev_address, void* data, uint8_t data_size)
+{
+	uint32_t status = PRJ_STATUS_OK;
+
+	/* Check the pointer and data size */
+	if((data == NULL) || (data_size >= PRJ_24LC256_STATIC_DATA_SPACE_SIZE))
+	{
+		status = PRJ_STATUS_ERROR;
+	}
+	else
+	{
+		/* DO NOTHING */
+	}
+
+#if(PRJ_24LC256_WP_ENABLED == 1U)
+	eeprom_24lc256_write_protection(PRJ_STATE_ENABLE);
+#endif
+
+	if(status == PRJ_STATUS_OK)
+	{
+		/* Fill i2c rx structure */
+		m_i2c_rx.p_i2c				= PRJ_24LC256_I2C_USED;
+		m_i2c_rx.dev_address		= dev_address;
+		m_i2c_rx.mem_address		= PRJ_24LC256_STATIC_DATA_SPACE_BEGIN;
+		m_i2c_rx.mem_address_size	= PRJ_I2C_MEM_ADDRESS_SIZE_16BIT;
+		m_i2c_rx.p_data				= (uint8_t*)data;
+		m_i2c_rx.data_size 			= data_size;
+		status = prj_i2c_read_dma(&m_i2c_rx);
+	}
+	else
+	{
+		/* DO NOTHING */
+	}
+
+	return status;
+}
+
+/*!
  * @brief Set dma handlers' pointers in 24LC256 structure.
  *
  * This function is used to get and to safe dma handlers' pointers and to link dma handlers and i2c transmission structures.
