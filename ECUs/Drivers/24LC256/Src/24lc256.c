@@ -120,6 +120,10 @@ uint32_t prj_eeprom_24lc256_init(uint8_t dev_address)
 
 	if(status == PRJ_STATUS_OK)
 	{
+		/* Analyze status and parameter buffers */
+		eeprom_24lc256_analyze_status_buffer(m_status_buffer, (sizeof(m_status_buffer) / sizeof(m_status_buffer[0])));
+		eeprom_24lc256_analyze_parameter_buffer(m_parameter_buffer, (sizeof(m_parameter_buffer) / sizeof(m_parameter_buffer[0])));
+
 		/* Search for the index of the status buffer that contains the maximum value */
 		eeprom_24lc256_status_buffer_index_get(m_status_buffer,
 											   PRJ_24LC256_DINAMIC_DATA_STATUS_SPACE_SIZE,
