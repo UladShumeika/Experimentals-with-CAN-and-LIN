@@ -307,6 +307,9 @@ static uint32_t eeprom_init_dma(void)
 	m_dma_rx.dma_init.fifo_mode					= PRJ_DMA_FIFO_MODE_DISABLE;
 	status = prj_dma_init(&m_dma_rx);
 
+	/* Safe dma handlers' pointers */
+	prj_eeprom_24lc256_dma_handlers_set(&m_dma_tx, &m_dma_rx);
+
 	return status;
 }
 
