@@ -56,11 +56,15 @@ typedef struct
 {
 	uint8_t buffer_index;				/*!< Index of the status and parameter buffers */
 
-	uint8_t entry_number;				/*!< Memory entry number */
+	uint8_t record_number;				/*!< Memory record number */
 
-	uint8_t reserved1; 					/*!< For structure size alignment. */
+	uint16_t actual_data_address;		/*!< Actual data address */
 
-	uint8_t reserved2; 					/*!< For structure size alignment. */
+	uint16_t next_record_address;		/*!< Next record address */
+
+	uint8_t reserved1;					/*!< For structure size alignment */
+
+	uint8_t reserved2;					/*!< For structure size alignment */
 
 } prj_24lc256_system_t;
 

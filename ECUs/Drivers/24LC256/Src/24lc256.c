@@ -375,7 +375,7 @@ static void eeprom_24lc256_status_buffer_index_get(uint8_t* data, uint8_t data_s
 
 		/* Safe data */
 		system->buffer_index = index;
-		system->entry_number = max_value;
+		system->record_number = max_value;
 	}
 	else
 	{
