@@ -467,12 +467,12 @@ static uint32_t eeprom_24lc256_analyze_parameter_buffer(uint16_t* data, uint8_t 
  */
 static void eeprom_24lc256_status_buffer_index_get(uint16_t* data, uint8_t data_size, prj_24lc256_system_t* system)
 {
-	uint8_t index = 0;
-	uint8_t max_value = data[0];
+	uint8_t index = 0U;
+	uint16_t max_value = 0U;
 
 	if((data != NULL) && (system != NULL))
 	{
-		for(uint8_t i = 1; i < data_size; i++)
+		for(uint8_t i = 0U; i < data_size; i++)
 		{
 			if(max_value < data[i])
 			{
