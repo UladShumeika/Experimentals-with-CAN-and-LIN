@@ -114,7 +114,7 @@ void prj_eeprom_freertos_init(void)
  */
 void prj_eeprom_i2c_ev_irq_handler(void)
 {
-	prj_i2c_irq_handler(m_i2c_rx.p_i2c);
+	prj_i2c_irq_handler(PRJ_EEPROM_I2C_USE);
 }
 
 /*!
@@ -122,7 +122,7 @@ void prj_eeprom_i2c_ev_irq_handler(void)
  */
 void prj_eeprom_i2c_er_irq_handler(void)
 {
-
+	prj_i2c_irq_handler(PRJ_EEPROM_I2C_USE);
 }
 
 /*!
