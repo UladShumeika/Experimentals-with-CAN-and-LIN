@@ -62,9 +62,9 @@ static prj_24lc256_system_t m_system_param = {0};
 //---------------------------------------------------------------------------
 // Variables
 //---------------------------------------------------------------------------
-static uint8_t m_24lc256_status_buffer[PRJ_24LC256_DINAMIC_DATA_STATUS_SPACE_SIZE] = {0};
-static uint8_t m_24lc256_parameter_buffer[PRJ_24LC256_DINAMIC_DATA_PARAMETER_SPACE_SIZE] = {0};
-static uint8_t page_buffer[PRJ_24LC256_PAGE_SIZE] = {0};
+static uint16_t m_status_buffer[PRJ_24LC256_DINAMIC_DATA_STATUS_SPACE_SIZE] = {0};
+static uint16_t m_parameter_buffer[PRJ_24LC256_DINAMIC_DATA_PARAMETER_SPACE_SIZE] = {0};
+static uint8_t m_page_buffer[PRJ_24LC256_PAGE_SIZE] = {0};
 
 //---------------------------------------------------------------------------
 // Static functions declaration
@@ -106,20 +106,20 @@ uint32_t prj_eeprom_24lc256_init(uint8_t dev_address)
 
 	/* Capture status buffer from memory */
 	m_i2c_rx.mem_address		= PRJ_24LC256_DINAMIC_DATA_STATUS_SPACE_BEGIN;
-	m_i2c_rx.p_data				= m_24lc256_status_buffer;
-	m_i2c_rx.data_size 			= PRJ_24LC256_DINAMIC_DATA_STATUS_SPACE_SIZE;
+	m_i2c_rx.p_data				= (uint8_t*)m_status_buffer;
+	m_i2c_rx.data_size 			= sizeof(m_status_buffer);
 	status = prj_i2c_read_dma(&m_i2c_rx);
 
 	/* Capture parameter buffer from memory */
 	m_i2c_rx.mem_address		= PRJ_24LC256_DINAMIC_DATA_PARAMETER_SPACE_BEGIN;
-	m_i2c_rx.p_data				= m_24lc256_parameter_buffer;
-	m_i2c_rx.data_size 			= PRJ_24LC256_DINAMIC_DATA_PARAMETER_SPACE_SIZE;
+	m_i2c_rx.p_data				= (uint8_t*)m_parameter_buffer;
+	m_i2c_rx.data_size 			= sizeof(m_parameter_buffer);
 	status = prj_i2c_read_dma(&m_i2c_rx);
 
 	if(status == PRJ_STATUS_OK)
 	{
 		/* Search for the index of the status buffer that contains the maximum value */
-		eeprom_24lc256_status_buffer_index_get(m_24lc256_status_buffer,
+		eeprom_24lc256_status_buffer_index_get(m_status_buffer,
 											   PRJ_24LC256_DINAMIC_DATA_STATUS_SPACE_SIZE,
 											   &m_system_param);
 	}
@@ -199,13 +199,13 @@ uint32_t prj_eeprom_24lc256_erase_memory(uint8_t dev_address)
 	uint16_t mem_address = 0x0000U;
 
 	/* Fill in the page buffer */
-	memset(page_buffer, 0xFFU, PRJ_24LC256_PAGE_SIZE);
+	memset(m_page_buffer, 0xFFU, PRJ_24LC256_PAGE_SIZE);
 
 	/* Fill in the i2c tx structure */
 	m_i2c_tx.p_i2c				= PRJ_24LC256_I2C_USED;
 	m_i2c_tx.dev_address		= dev_address;
 	m_i2c_tx.mem_address_size	= PRJ_I2C_MEM_ADDRESS_SIZE_16BIT;
-	m_i2c_tx.p_data				= page_buffer;
+	m_i2c_tx.p_data				= m_page_buffer;
 	m_i2c_tx.data_size 			= PRJ_24LC256_PAGE_SIZE;
 
 #if(PRJ_24LC256_WP_ENABLED == 1U)
