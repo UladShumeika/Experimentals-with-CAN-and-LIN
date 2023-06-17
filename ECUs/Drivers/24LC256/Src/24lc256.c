@@ -128,6 +128,28 @@ uint32_t prj_eeprom_24lc256_init(uint8_t dev_address)
 		eeprom_24lc256_status_buffer_index_get(m_status_buffer,
 											   PRJ_24LC256_DINAMIC_DATA_STATUS_SPACE_SIZE,
 											   &m_system_param);
+
+		/* Set the actual record address */
+		m_system_param.actual_data_address = m_parameter_buffer[m_system_param.buffer_index];
+
+		/* Calculate the next record address */
+		if(m_system_param.record_number == 0U)
+		{
+			m_system_param.next_record_address = PRJ_24LC256_DINAMIC_DATA_SPACE_BEGIN;
+		}
+		else
+		{
+			m_system_param.next_record_address = m_system_param.actual_data_address + PRJ_24LC256_MSG_SIZE;
+
+			if(m_system_param.next_record_address == PRJ_24LC256_MAX_MEM_ADDRESS)
+			{
+				m_system_param.next_record_address = PRJ_24LC256_DINAMIC_DATA_SPACE_BEGIN;
+			}
+			else
+			{
+				; /* DO NOTHING */
+			}
+		}
 	}
 	else
 	{
