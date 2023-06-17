@@ -32,22 +32,23 @@
 
 /* The status buffer that stores a pointer to the index of the parameter buffer
  * that already stores a pointer to the actual data (32 bytes) */
-#define PRJ_24LC256_DINAMIC_DATA_STATUS_SPACE_SIZE			(PRJ_24LC256_PAGE_SIZE / 2U)
+#define PRJ_24LC256_DINAMIC_DATA_STATUS_SPACE_SIZE			(PRJ_24LC256_PAGE_SIZE / 2U / 2U)
 #define PRJ_24LC256_DINAMIC_DATA_STATUS_SPACE_BEGIN			(0x0040U)
 #define PRJ_24LC256_DINAMIC_DATA_STATUS_SPACE_END			(0x005FU)
 
 /* The parameter buffer that stores a pointer to the actual data (32 bytes) */
-#define PRJ_24LC256_DINAMIC_DATA_PARAMETER_SPACE_SIZE		(PRJ_24LC256_PAGE_SIZE / 2U)
+#define PRJ_24LC256_DINAMIC_DATA_PARAMETER_SPACE_SIZE		(PRJ_24LC256_PAGE_SIZE / 2U / 2U)
 #define PRJ_24LC256_DINAMIC_DATA_PARAMETER_SPACE_BEGIN		(0x0060U)
 #define PRJ_24LC256_DINAMIC_DATA_PARAMETER_SPACE_END		(0x009FU)
 
 /* Used to store the actual data */
-#define PRJ_24LC256_DINAMIC_DATA_SPACE_SIZE					(32608U)
-#define PRJ_24LC256_DINAMIC_DATA_SPACE_BEGIN				(0x00A0U)
+#define PRJ_24LC256_DINAMIC_DATA_SPACE_SIZE					(32640U)
+#define PRJ_24LC256_DINAMIC_DATA_SPACE_BEGIN				(0x0080U)
 #define PRJ_24LC256_DINAMIC_DATA_SPACE_END					(PRJ_24LC256_MAX_MEM_ADDRESS)
 
+#define PRJ_24LC256_MAX_NUM_RECORDS							(200U)  /* Used for status buffer */
 #define PRJ_24LC256_TRIALS									(3U)
-#define PRJ_24LC256_DELAY									(20U)
+#define PRJ_24LC256_DELAY									(10U)
 
 //---------------------------------------------------------------------------
 // Types
