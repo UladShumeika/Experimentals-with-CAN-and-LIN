@@ -158,4 +158,20 @@ uint32_t prj_eeprom_24lc256_read_static(uint8_t dev_address, void* data, uint8_t
  */
 uint32_t prj_eeprom_24lc256_write_static(uint8_t dev_address, void* data, uint8_t data_size);
 
+/*!
+ * @brief Write the data in the dynamic data space.
+ *
+ * This function is used to write data in the dynamic space.
+ *
+ * @param[in] dev_address	A target device address.
+ * @param[in] data			A pointer to the array in which to store the data.
+ * @param[in] data_size	 	Size of the array.
+ *
+ * @return @ref PRJ_STATUS_OK if memory writing was successful.
+ * @return @ref PRJ_STATUS_ERROR if the device is not detected or the pointer is NULL or
+ * 		   array size is larger than static data space.
+ * @return @ref PRJ_STATUS_TIMEOUT if a timeout is detected on any flag.
+ */
+uint32_t prj_eeprom_24lc256_write_dynamic(uint8_t dev_address, uint8_t* data, uint16_t data_size);
+
 #endif /* __24lc256_h */

@@ -65,6 +65,7 @@ static prj_24lc256_system_t m_system_param = {0};
 static uint16_t m_status_buffer[PRJ_24LC256_DINAMIC_DATA_STATUS_SPACE_SIZE] = {0};
 static uint16_t m_parameter_buffer[PRJ_24LC256_DINAMIC_DATA_PARAMETER_SPACE_SIZE] = {0};
 static uint8_t m_page_buffer[PRJ_24LC256_PAGE_SIZE] = {0};
+static uint8_t m_transition_buffer[PRJ_24LC256_MSG_SIZE] = {0};
 
 //---------------------------------------------------------------------------
 // Static functions declaration
@@ -364,6 +365,111 @@ uint32_t prj_eeprom_24lc256_write_static(uint8_t dev_address, void* data, uint8_
 #if(PRJ_24LC256_WP_ENABLED == 1U)
 	eeprom_24lc256_write_protection(PRJ_STATE_ENABLE);
 #endif
+
+	return status;
+}
+
+/*!
+ * @brief Write the data in the dynamic data space.
+ *
+ * This function is used to write data in the dynamic space.
+ *
+ * @param[in] dev_address	A target device address.
+ * @param[in] data			A pointer to the array in which to store the data.
+ * @param[in] data_size	 	Size of the array.
+ *
+ * @return @ref PRJ_STATUS_OK if memory writing was successful.
+ * @return @ref PRJ_STATUS_ERROR if the device is not detected or the pointer is NULL or
+ * 		   array size is larger than static data space.
+ * @return @ref PRJ_STATUS_TIMEOUT if a timeout is detected on any flag.
+ */
+uint32_t prj_eeprom_24lc256_write_dynamic(uint8_t dev_address, uint8_t* data, uint16_t data_size)
+{
+	uint32_t status = PRJ_STATUS_OK;
+	uint16_t remainig_data = 0U;
+	uint16_t index_transition_buffer = 0U;
+	uint8_t temp_size_data;
+ 	uint8_t free_space = 0U;
+
+	/* Check the pointer and data size */
+	if((data == NULL) || (data_size > PRJ_24LC256_DINAMIC_DATA_SPACE_SIZE) || (data_size != PRJ_24LC256_MSG_SIZE))
+	{
+		status = PRJ_STATUS_ERROR;
+	}
+	else
+	{
+		/* DO NOTHING */
+	}
+
+	if(status == PRJ_STATUS_OK)
+	{
+
+		#if(PRJ_24LC256_WP_ENABLED == 1U)
+			eeprom_24lc256_write_protection(PRJ_STATE_DISABLE);
+		#endif
+
+		/* Calculate free space in current page and the next record address */
+		free_space = eeprom_24lc256_free_space_current_page(&m_system_param);
+
+		/* Fill in the general parameters */
+		m_i2c_tx.p_i2c				= PRJ_24LC256_I2C_USED;
+		m_i2c_tx.dev_address		= dev_address;
+		m_i2c_tx.mem_address_size	= PRJ_I2C_MEM_ADDRESS_SIZE_16BIT;
+
+		if(data_size <= free_space)
+		{
+			/* Fill i2c tx structure */
+			m_i2c_tx.mem_address		= m_system_param.next_record_address;
+			m_i2c_tx.p_data				= data;
+			m_i2c_tx.data_size 			= data_size;
+			status = prj_i2c_write_dma(&m_i2c_tx);
+
+			MISC_timeoutDelay(PRJ_24LC256_DELAY);
+		}
+		else
+		{
+			/* Copy input data in the transition buffer */
+			memcpy(m_transition_buffer, data, data_size);
+
+			/* Set remaining data, transition buffer index and temp data size */
+			remainig_data = data_size;
+			index_transition_buffer = 0U;
+			temp_size_data = free_space;
+
+			/* Send data */
+			while((remainig_data > 0U) && (status == PRJ_STATUS_OK))
+			{
+				/* Fill i2c tx structure */
+				m_i2c_tx.mem_address		= m_system_param.next_record_address;
+				m_i2c_tx.p_data				= &m_transition_buffer[index_transition_buffer];
+				m_i2c_tx.data_size 			= temp_size_data;
+				status = prj_i2c_write_dma(&m_i2c_tx);
+
+				/* Calculate remaining data and transition buffer index */
+				remainig_data -= temp_size_data;
+				index_transition_buffer += temp_size_data;
+
+				/* Calculate next record address and free space */
+				m_system_param.next_record_address += temp_size_data;
+				free_space = eeprom_24lc256_free_space_current_page(&m_system_param);
+
+				/* Calculate temp data size */
+				temp_size_data = (free_space >= remainig_data) ? remainig_data : free_space;
+
+				MISC_timeoutDelay(PRJ_24LC256_DELAY);
+			}
+		}
+
+		status = eeprom_24lc256_update_system_parameters(&m_system_param);
+	}
+	else
+	{
+		/* DO NOTHING */
+	}
+
+	#if(PRJ_24LC256_WP_ENABLED == 1U)
+		eeprom_24lc256_write_protection(PRJ_STATE_ENABLE);
+	#endif
 
 	return status;
 }
