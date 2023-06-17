@@ -57,7 +57,7 @@ static prj_24lc256_dma_handlers_t m_dma_handlers = {0};
 static prj_i2c_transmission_t m_i2c_tx = {0};
 static prj_i2c_transmission_t m_i2c_rx = {0};
 
-static prj_24lc256_system_t m_system = {0};
+static prj_24lc256_system_t m_system_param = {0};
 
 //---------------------------------------------------------------------------
 // Variables
@@ -121,7 +121,7 @@ uint32_t prj_eeprom_24lc256_init(uint8_t dev_address)
 		/* Search for the index of the status buffer that contains the maximum value */
 		eeprom_24lc256_status_buffer_index_get(m_24lc256_status_buffer,
 											   PRJ_24LC256_DINAMIC_DATA_STATUS_SPACE_SIZE,
-											   &m_system);
+											   &m_system_param);
 	}
 	else
 	{
