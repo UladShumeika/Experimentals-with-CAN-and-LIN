@@ -72,6 +72,7 @@ static uint8_t m_page_buffer[PRJ_24LC256_PAGE_SIZE] = {0};
 static uint32_t eeprom_24lc256_analyze_status_buffer(uint16_t* data, uint8_t data_size);
 static uint32_t eeprom_24lc256_analyze_parameter_buffer(uint16_t* data, uint8_t data_size);
 static void eeprom_24lc256_status_buffer_index_get(uint16_t* data, uint8_t data_size, prj_24lc256_system_t* system);
+static uint8_t eeprom_24lc256_free_space_current_page(prj_24lc256_system_t* system);
 
 #if(PRJ_24LC256_WP_ENABLED == 1U)
 	static void eeprom_24lc256_write_protection(uint32_t state);
@@ -491,6 +492,38 @@ static void eeprom_24lc256_status_buffer_index_get(uint16_t* data, uint8_t data_
 	{
 		/* DO NOTHING */
 	}
+}
+
+/*!
+ * @brief Calculate the current page's free space.
+ *
+ * This function is used to calculate free space of the current page.
+ *
+ * @param[in] system_param  system structure that contains information about
+ * 							the address of the current data location and the number of records made.
+ *
+ * @return the current page's free space.
+ */
+static uint8_t eeprom_24lc256_free_space_current_page(prj_24lc256_system_t* system_param)
+{
+	uint8_t free_space_current_page = 0U;
+	uint16_t next_page_address = 0U;
+	uint16_t current_page = 0U;
+
+	/* from 0 */
+	current_page = system_param->next_record_address / PRJ_24LC256_PAGE_SIZE;
+
+	if(system_param->record_number == 0U)
+	{
+		free_space_current_page = PRJ_24LC256_PAGE_SIZE;
+	}
+	else
+	{
+		next_page_address = (current_page + 1) * PRJ_24LC256_PAGE_SIZE;
+		free_space_current_page = (uint8_t)(next_page_address - system_param->next_record_address);
+	}
+
+	return free_space_current_page;
 }
 
 #if(PRJ_24LC256_WP_ENABLED == 1U)
