@@ -69,7 +69,8 @@ static uint8_t m_page_buffer[PRJ_24LC256_PAGE_SIZE] = {0};
 //---------------------------------------------------------------------------
 // Static functions declaration
 //---------------------------------------------------------------------------
-static void eeprom_24lc256_status_buffer_index_get(uint8_t* data, uint8_t data_size, prj_24lc256_system_t* system);
+static uint32_t eeprom_24lc256_analyze_status_buffer(uint16_t* data, uint8_t data_size);
+static void eeprom_24lc256_status_buffer_index_get(uint16_t* data, uint8_t data_size, prj_24lc256_system_t* system);
 
 #if(PRJ_24LC256_WP_ENABLED == 1U)
 	static void eeprom_24lc256_write_protection(uint32_t state);
@@ -343,6 +344,46 @@ uint32_t prj_eeprom_24lc256_write_static(uint8_t dev_address, void* data, uint8_
 //---------------------------------------------------------------------------
 
 /*!
+ * @brief Analyze the status buffer
+ *
+ * This function is used to analyze the status buffer and if there are values ​​greater
+ * than @ref PRJ_24LC256_MAX_NUM_RECORDS then set it to zero, since this is most likely the first run.
+ *
+ * @param[in] data  		A pointer to the status buffer.
+ * @param[in] data_size		Size of the status buffer.
+ *
+ * @return @ref PRJ_STATUS_OK if the analysis was successful.
+ * @return @ref PRJ_STATUS_ERROR if no buffer pointer is passed.
+ */
+static uint32_t eeprom_24lc256_analyze_status_buffer(uint16_t* data, uint8_t data_size)
+{
+	uint32_t status = PRJ_STATUS_OK;
+
+	if(data == NULL)
+	{
+		status = PRJ_STATUS_ERROR;
+	}
+	else
+	{
+		; /* DO NOTHING */
+	}
+
+	for(uint8_t i = 0; i < data_size; i++)
+	{
+		if(data[i] > PRJ_24LC256_MAX_NUM_RECORDS)
+		{
+			data[i] = 0U;
+		}
+		else
+		{
+			; /* DO NOTHING */
+		}
+	}
+
+	return status;
+}
+
+/*!
  * @brief Search for the index in the status buffer.
  *
  * This function is used to search for the index of the status buffer that contains the maximum value
@@ -354,7 +395,7 @@ uint32_t prj_eeprom_24lc256_write_static(uint8_t dev_address, void* data, uint8_
  *
  * @return None.
  */
-static void eeprom_24lc256_status_buffer_index_get(uint8_t* data, uint8_t data_size, prj_24lc256_system_t* system)
+static void eeprom_24lc256_status_buffer_index_get(uint16_t* data, uint8_t data_size, prj_24lc256_system_t* system)
 {
 	uint8_t index = 0;
 	uint8_t max_value = data[0];
