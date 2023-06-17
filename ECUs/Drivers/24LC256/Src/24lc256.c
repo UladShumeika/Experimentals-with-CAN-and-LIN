@@ -73,6 +73,7 @@ static uint32_t eeprom_24lc256_analyze_status_buffer(uint16_t* data, uint8_t dat
 static uint32_t eeprom_24lc256_analyze_parameter_buffer(uint16_t* data, uint8_t data_size);
 static void eeprom_24lc256_status_buffer_index_get(uint16_t* data, uint8_t data_size, prj_24lc256_system_t* system);
 static uint8_t eeprom_24lc256_free_space_current_page(prj_24lc256_system_t* system);
+static uint32_t eeprom_24lc256_update_system_parameters(prj_24lc256_system_t* system_param);
 
 #if(PRJ_24LC256_WP_ENABLED == 1U)
 	static void eeprom_24lc256_write_protection(uint32_t state);
@@ -524,6 +525,70 @@ static uint8_t eeprom_24lc256_free_space_current_page(prj_24lc256_system_t* syst
 	}
 
 	return free_space_current_page;
+}
+
+/*!
+ * @brief Update system parameters
+ *
+ * @param[in] system_param 	system structure that contains information about
+ * 							the address of the current data location and the number of records made.
+ *
+ * @return @ref PRJ_STATUS_OK if the data is updated successfully.
+ * @return @ref PRJ_STATUS_ERROR if a pointer is not passed either to the structure itself
+ * 		   or to the DMA peripheral or the size of the transmitted data is 0.
+ * @return @ref PRJ_STATUS_TIMEOUT if a timeout is detected on any flag.
+ */
+static uint32_t eeprom_24lc256_update_system_parameters(prj_24lc256_system_t* system_param)
+{
+	uint32_t status = PRJ_STATUS_OK;
+
+	/* Calculate the new actual data address */
+	system_param->actual_data_address = system_param->next_record_address - PRJ_24LC256_MSG_SIZE;
+
+	/* Increase buffer index */
+	system_param->buffer_index++;
+	if(system_param->buffer_index >= PRJ_24LC256_DINAMIC_DATA_STATUS_SPACE_SIZE)
+	{
+		system_param->buffer_index = 0U;
+	}
+	else
+	{
+		; /* DO NOTHING */
+	}
+
+	/* Write to parameter buffer */
+	m_parameter_buffer[system_param->buffer_index] = system_param->actual_data_address;
+
+	/* Update record number and write to status buffer */
+	system_param->record_number++;
+	if(system_param->record_number > PRJ_24LC256_MAX_NUM_RECORDS)
+	{
+		/* Start counting from 1 and reset the status buffer */
+		system_param->record_number = 1U;
+		memset(m_status_buffer, 0x00U, sizeof(m_status_buffer));
+	}
+	else
+	{
+		; /* DO NOTHING */
+	}
+
+	m_status_buffer[system_param->buffer_index] = system_param->record_number;
+
+	/* Fill i2c tx structure end send parameter buffer */
+	m_i2c_tx.mem_address		= PRJ_24LC256_DINAMIC_DATA_PARAMETER_SPACE_BEGIN;
+	m_i2c_tx.p_data				= (uint8_t*)m_parameter_buffer;
+	m_i2c_tx.data_size 			= sizeof(m_parameter_buffer);
+	status = prj_i2c_write_dma(&m_i2c_tx);
+	MISC_timeoutDelay(PRJ_24LC256_DELAY);
+
+	/* Fill i2c tx structure end send status buffer */
+	m_i2c_tx.mem_address		= PRJ_24LC256_DINAMIC_DATA_STATUS_SPACE_BEGIN;
+	m_i2c_tx.p_data				= (uint8_t*)m_status_buffer;
+	m_i2c_tx.data_size 			= sizeof(m_status_buffer);
+	status = prj_i2c_write_dma(&m_i2c_tx);
+	MISC_timeoutDelay(PRJ_24LC256_DELAY);
+
+	return status;
 }
 
 #if(PRJ_24LC256_WP_ENABLED == 1U)
