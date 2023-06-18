@@ -71,8 +71,6 @@ static uint8_t m_transition_buffer[PRJ_24LC256_MSG_SIZE] = {0};
 //---------------------------------------------------------------------------
 // Static functions declaration
 //---------------------------------------------------------------------------
-static uint32_t eeprom_24lc256_analyze_status_buffer(uint16_t* data, uint8_t data_size);
-static uint32_t eeprom_24lc256_analyze_parameter_buffer(uint16_t* data, uint8_t data_size);
 static void eeprom_24lc256_status_buffer_index_get(uint16_t* data, uint8_t data_size, prj_24lc256_system_t* system);
 static uint8_t eeprom_24lc256_free_space_current_page(prj_24lc256_system_t* system);
 static uint32_t eeprom_24lc256_update_system_parameters(prj_24lc256_system_t* system_param);
@@ -537,87 +535,6 @@ uint32_t prj_eeprom_24lc256_write_dynamic(uint8_t dev_address, uint8_t* data, ui
 //---------------------------------------------------------------------------
 // STATIC
 //---------------------------------------------------------------------------
-
-/*!
- * @brief Analyze the status buffer
- *
- * This function is used to analyze the status buffer and if there are values ​​greater
- * than @ref PRJ_24LC256_MAX_NUM_RECORDS then set it to zero, since this is most likely the first run.
- *
- * @param[in] data  		A pointer to the status buffer.
- * @param[in] data_size		Size of the status buffer.
- *
- * @return @ref PRJ_STATUS_OK if the analysis was successful.
- * @return @ref PRJ_STATUS_ERROR if no buffer pointer is passed.
- */
-static uint32_t eeprom_24lc256_analyze_status_buffer(uint16_t* data, uint8_t data_size)
-{
-	uint32_t status = PRJ_STATUS_OK;
-
-	if(data == NULL)
-	{
-		status = PRJ_STATUS_ERROR;
-	}
-	else
-	{
-		; /* DO NOTHING */
-	}
-
-	for(uint8_t i = 0; i < data_size; i++)
-	{
-		if(data[i] > PRJ_24LC256_MAX_NUM_RECORDS)
-		{
-			data[i] = 0U;
-		}
-		else
-		{
-			; /* DO NOTHING */
-		}
-	}
-
-	return status;
-}
-
-/*!
- * @brief Analyze the parameter buffer
- *
- * This function is used to analyze the parameter buffer and if there are values ​​greater
- * than @ref PRJ_24LC256_MAX_MEM_ADDRESS then set it to @ref PRJ_24LC256_DINAMIC_DATA_SPACE_BEGIN,
- * since this is most likely the first run.
- *
- * @param[in] data  		A pointer to the parameter buffer.
- * @param[in] data_size		Size of the status buffer.
- *
- * @return @ref PRJ_STATUS_OK if the analysis was successful.
- * @return @ref PRJ_STATUS_ERROR if no buffer pointer is passed.
- */
-static uint32_t eeprom_24lc256_analyze_parameter_buffer(uint16_t* data, uint8_t data_size)
-{
-	uint32_t status = PRJ_STATUS_OK;
-
-	if(data == NULL)
-	{
-		status = PRJ_STATUS_ERROR;
-	}
-	else
-	{
-		; /* DO NOTHING */
-	}
-
-	for(uint8_t i = 0; i < data_size; i++)
-	{
-		if(data[i] >= PRJ_24LC256_MAX_MEM_ADDRESS)
-		{
-			data[i] = PRJ_24LC256_DINAMIC_DATA_SPACE_BEGIN;
-		}
-		else
-		{
-			; /* DO NOTHING */
-		}
-	}
-
-	return status;
-}
 
 /*!
  * @brief Search for the index in the status buffer.
