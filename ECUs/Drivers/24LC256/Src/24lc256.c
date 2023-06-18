@@ -22,7 +22,7 @@
 // Definitions
 //---------------------------------------------------------------------------
 #define PRJ_24LC256_PAGE_SIZE								(64U)
-#define PRJ_24LC256_MAX_MEM_SIZE							(32768U)
+#define PRJ_24LC256_MAX_MEM_SIZE							(640U) // 32768
 #define PRJ_24LC256_MAX_MEM_ADDRESS							(PRJ_24LC256_MAX_MEM_SIZE - 1U)
 
 /* Used to store data that is written only once and
@@ -99,11 +99,11 @@ static uint32_t eeprom_24lc256_update_system_parameters(prj_24lc256_system_t* sy
 uint32_t prj_eeprom_24lc256_init(uint8_t dev_address)
 {
 	uint32_t status = PRJ_STATUS_OK;
+	uint16_t remainder = 0U;
 
-	/* Enable write protection */
-#if(PRJ_24LC256_WP_ENABLED == 1U)
-	eeprom_24lc256_write_protection(PRJ_STATE_ENABLE);
-#endif
+	#if(PRJ_24LC256_WP_ENABLED == 1U)
+		eeprom_24lc256_write_protection(PRJ_STATE_ENABLE);
+	#endif
 
 	/* Fill in the general parameters */
 	m_i2c_rx.p_i2c				= PRJ_24LC256_I2C_USED;
@@ -124,10 +124,47 @@ uint32_t prj_eeprom_24lc256_init(uint8_t dev_address)
 
 	if(status == PRJ_STATUS_OK)
 	{
-		/* Analyze status and parameter buffers */
-		eeprom_24lc256_analyze_status_buffer(m_status_buffer, (sizeof(m_status_buffer) / sizeof(m_status_buffer[0])));
-		eeprom_24lc256_analyze_parameter_buffer(m_parameter_buffer, (sizeof(m_parameter_buffer) / sizeof(m_parameter_buffer[0])));
+		/* If this condition is met, then system buffers havn't been initialized */
+		if(m_status_buffer[0] > PRJ_24LC256_MAX_NUM_RECORDS)
+		{
+			/* Initialize the status buffer */
+			memset(m_status_buffer, 0x00U, sizeof(m_status_buffer));
 
+			/* Initialize the parameter buffer */
+			for(uint8_t i = 0; i < (sizeof(m_parameter_buffer) / sizeof(m_parameter_buffer[0])); i++)
+			{
+				m_parameter_buffer[i] = PRJ_24LC256_DINAMIC_DATA_SPACE_BEGIN;
+			}
+
+			/* Fill in the general parameters */
+			m_i2c_tx.p_i2c				= PRJ_24LC256_I2C_USED;
+			m_i2c_tx.dev_address		= dev_address;
+			m_i2c_tx.mem_address_size	= PRJ_I2C_MEM_ADDRESS_SIZE_16BIT;
+
+			/* Write the status buffer to the memory */
+			m_i2c_tx.mem_address		= PRJ_24LC256_DINAMIC_DATA_STATUS_SPACE_BEGIN;
+			m_i2c_tx.p_data				= (uint8_t*)m_status_buffer;
+			m_i2c_tx.data_size 			= sizeof(m_status_buffer);
+			status = prj_i2c_write_dma(&m_i2c_tx);
+
+			/* Write the parameter buffer to the memory */
+			m_i2c_tx.mem_address		= PRJ_24LC256_DINAMIC_DATA_PARAMETER_SPACE_BEGIN;
+			m_i2c_tx.p_data				= (uint8_t*)m_parameter_buffer;
+			m_i2c_tx.data_size 			= sizeof(m_parameter_buffer);
+			status = prj_i2c_write_dma(&m_i2c_tx);
+		}
+		else
+		{
+			; /* DO NOTHING */
+		}
+	}
+	else
+	{
+		/* DO NOTHING */
+	}
+
+	if(status == PRJ_STATUS_OK)
+	{
 		/* Search for the index of the status buffer that contains the maximum value */
 		eeprom_24lc256_status_buffer_index_get(m_status_buffer,
 											   PRJ_24LC256_DINAMIC_DATA_STATUS_SPACE_SIZE,
@@ -145,9 +182,12 @@ uint32_t prj_eeprom_24lc256_init(uint8_t dev_address)
 		{
 			m_system_param.next_record_address = m_system_param.actual_data_address + PRJ_24LC256_MSG_SIZE;
 
-			if(m_system_param.next_record_address == PRJ_24LC256_MAX_MEM_ADDRESS)
+			/* Calculate the address of the next record if there was a transition from the end
+			 * to the beginning of the memory area */
+			if(m_system_param.next_record_address >= PRJ_24LC256_MAX_MEM_SIZE)
 			{
-				m_system_param.next_record_address = PRJ_24LC256_DINAMIC_DATA_SPACE_BEGIN;
+				 remainder = (m_system_param.next_record_address - PRJ_24LC256_MAX_MEM_SIZE);
+				 m_system_param.next_record_address = remainder + PRJ_24LC256_DINAMIC_DATA_SPACE_BEGIN;
 			}
 			else
 			{
@@ -157,7 +197,7 @@ uint32_t prj_eeprom_24lc256_init(uint8_t dev_address)
 	}
 	else
 	{
-		/* DO NOTHING */
+		; /* DO NOTHING */
 	}
 
 	return status;
@@ -465,7 +505,7 @@ uint32_t prj_eeprom_24lc256_write_dynamic(uint8_t dev_address, uint8_t* data, ui
 	}
 	else
 	{
-		/* DO NOTHING */
+		; /* DO NOTHING */
 	}
 
 	#if(PRJ_24LC256_WP_ENABLED == 1U)
