@@ -127,6 +127,10 @@ uint32_t prj_eeprom_24lc256_init(uint8_t dev_address)
 		/* If this condition is met, then system buffers havn't been initialized */
 		if(m_status_buffer[0] > PRJ_24LC256_MAX_NUM_RECORDS)
 		{
+			#if(PRJ_24LC256_WP_ENABLED == 1U)
+				eprom_24lc256_write_protection(PRJ_STATE_DISABLE);
+			#endif
+
 			/* Initialize the status buffer */
 			memset(m_status_buffer, 0x00U, sizeof(m_status_buffer));
 
@@ -152,6 +156,10 @@ uint32_t prj_eeprom_24lc256_init(uint8_t dev_address)
 			m_i2c_tx.p_data				= (uint8_t*)m_parameter_buffer;
 			m_i2c_tx.data_size 			= sizeof(m_parameter_buffer);
 			status = prj_i2c_write_dma(&m_i2c_tx);
+
+			#if(PRJ_24LC256_WP_ENABLED == 1U)
+				eeprom_24lc256_write_protection(PRJ_STATE_ENABLE);
+			#endif
 		}
 		else
 		{
