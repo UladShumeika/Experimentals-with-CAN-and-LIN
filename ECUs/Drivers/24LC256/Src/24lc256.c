@@ -22,7 +22,8 @@
 // Definitions
 //---------------------------------------------------------------------------
 #define PRJ_24LC256_PAGE_SIZE								(64U)
-#define PRJ_24LC256_MAX_MEM_ADDRESS							(32767U)
+#define PRJ_24LC256_MAX_MEM_SIZE							(32768U)
+#define PRJ_24LC256_MAX_MEM_ADDRESS							(PRJ_24LC256_MAX_MEM_SIZE - 1U)
 
 /* Used to store data that is written only once and
  * does not change during the operation of the device (64 bytes) */
@@ -647,9 +648,24 @@ static uint8_t eeprom_24lc256_free_space_current_page(prj_24lc256_system_t* syst
 static uint32_t eeprom_24lc256_update_system_parameters(prj_24lc256_system_t* system_param)
 {
 	uint32_t status = PRJ_STATUS_OK;
+	uint16_t first_part_message = 0U;
+	uint16_t second_part_message = 0U;
 
 	/* Calculate the new actual data address */
 	system_param->actual_data_address = system_param->next_record_address - PRJ_24LC256_MSG_SIZE;
+
+	/* If there was a transition from the end to the beginning of the buffer, correctly calculate
+	 * the address of the next record */
+	if(system_param->actual_data_address < PRJ_24LC256_DINAMIC_DATA_SPACE_BEGIN)
+	{
+		second_part_message = system_param->next_record_address % PRJ_24LC256_DINAMIC_DATA_SPACE_BEGIN;
+		first_part_message = PRJ_24LC256_MSG_SIZE - second_part_message;
+		system_param->actual_data_address = PRJ_24LC256_MAX_MEM_SIZE - first_part_message;
+	}
+	else
+	{
+		; /* DO NOTHING */
+	}
 
 	/* Increase buffer index */
 	system_param->buffer_index++;
