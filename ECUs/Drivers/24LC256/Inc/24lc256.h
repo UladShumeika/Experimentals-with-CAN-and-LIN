@@ -24,7 +24,7 @@
 #define PRJ_24LC256_I2C_USED						 (I2C2)
 #define PRJ_24LC256_I2C_CLOCK_SPEED					 (100000U)
 
-#define PRJ_24LC256_MSG_SIZE					 	 (130U)
+#define PRJ_24LC256_MSG_SIZE					 	 (93U)
 
 #define PRJ_24LC256_WP_ENABLED						 (0U)
 
