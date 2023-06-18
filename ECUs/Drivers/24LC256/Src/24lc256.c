@@ -490,8 +490,19 @@ uint32_t prj_eeprom_24lc256_write_dynamic(uint8_t dev_address, uint8_t* data, ui
 				remainig_data -= temp_size_data;
 				index_transition_buffer += temp_size_data;
 
-				/* Calculate next record address and free space */
-				m_system_param.next_record_address += temp_size_data;
+				/* Calculate next record address */
+				m_system_param.next_record_address = ((m_system_param.next_record_address + temp_size_data) % PRJ_24LC256_MAX_MEM_SIZE);
+
+				if(m_system_param.next_record_address < PRJ_24LC256_DINAMIC_DATA_SPACE_BEGIN)
+				{
+					m_system_param.next_record_address = PRJ_24LC256_DINAMIC_DATA_SPACE_BEGIN;
+				}
+				else
+				{
+					; /* DO NOTHING */
+				}
+
+				/* Calculate free space */
 				free_space = eeprom_24lc256_free_space_current_page(&m_system_param);
 
 				/* Calculate temp data size */
