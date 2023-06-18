@@ -532,6 +532,93 @@ uint32_t prj_eeprom_24lc256_write_dynamic(uint8_t dev_address, uint8_t* data, ui
 	return status;
 }
 
+/*!
+ * @brief Read the data in the dynamic data space.
+ *
+ * This function is used to write data in the dynamic space.
+ *
+ * @param[in] dev_address	A target device address.
+ * @param[out] data			A pointer to the array in which will store the data.
+ * @param[in] data_size	 	Size of the array.
+ *
+ * @return @ref PRJ_STATUS_OK if memory writing was successful.
+ * @return @ref PRJ_STATUS_ERROR if the device is not detected or the pointer is NULL or
+ * 		   array size is larger than static data space.
+ * @return @ref PRJ_STATUS_TIMEOUT if a timeout is detected on any flag.
+ */
+uint32_t prj_eeprom_24lc256_read_dynamic(uint8_t dev_address, uint8_t* data, uint16_t data_size)
+{
+	uint32_t status = PRJ_STATUS_OK;
+	uint16_t pointer_actual_data = 0U;
+	uint16_t first_part_data_size = 0U;
+	uint16_t second_part_data_size = 0U;
+
+	/* Check the pointer and data size */
+	if((data == NULL) || (data_size > PRJ_24LC256_DINAMIC_DATA_SPACE_SIZE) || (data_size != PRJ_24LC256_MSG_SIZE))
+	{
+		status = PRJ_STATUS_ERROR;
+	}
+	else
+	{
+		; /* DO NOTHING */
+	}
+
+	if(status == PRJ_STATUS_OK)
+	{
+		/* Read the actual data address */
+		pointer_actual_data = m_system_param.actual_data_address;
+
+		/* Fill in the general parameters */
+		m_i2c_rx.p_i2c				= PRJ_24LC256_I2C_USED;
+		m_i2c_rx.dev_address		= dev_address;
+		m_i2c_rx.mem_address_size	= PRJ_I2C_MEM_ADDRESS_SIZE_16BIT;
+
+		/* Check the actual data pointer */
+		if((pointer_actual_data >= PRJ_24LC256_DINAMIC_DATA_SPACE_BEGIN) && (pointer_actual_data <= PRJ_24LC256_DINAMIC_DATA_SPACE_END))
+		{
+			/* Check data size */
+			if((pointer_actual_data + data_size) <= PRJ_24LC256_DINAMIC_DATA_SPACE_END)
+			{
+				/* Fill i2c rx structure and read the memory */
+				m_i2c_rx.mem_address		= pointer_actual_data;
+				m_i2c_rx.p_data				= data;
+				m_i2c_rx.data_size 			= data_size;
+				status = prj_i2c_read_dma(&m_i2c_rx);
+			}
+			else
+			{
+				/* Calculate the first part data size */
+				first_part_data_size = PRJ_24LC256_MAX_MEM_SIZE - pointer_actual_data;
+
+				/* Fill i2c rx structure and read the memory */
+				m_i2c_rx.mem_address		= pointer_actual_data;
+				m_i2c_rx.p_data				= data;
+				m_i2c_rx.data_size 			= first_part_data_size;
+				status = prj_i2c_read_dma(&m_i2c_rx);
+
+				/* Calculate the second part data size */
+				second_part_data_size = data_size - first_part_data_size;
+
+				/* Fill i2c rx structure and read the memory */
+				m_i2c_rx.mem_address		= PRJ_24LC256_DINAMIC_DATA_SPACE_BEGIN;
+				m_i2c_rx.p_data				= (data + first_part_data_size);
+				m_i2c_rx.data_size 			= second_part_data_size;
+				status = prj_i2c_read_dma(&m_i2c_rx);
+			}
+		}
+		else
+		{
+			status = PRJ_STATUS_ERROR;
+		}
+	}
+	else
+	{
+		; /* DO NOTHING */
+	}
+
+	return status;
+}
+
 //---------------------------------------------------------------------------
 // STATIC
 //---------------------------------------------------------------------------
