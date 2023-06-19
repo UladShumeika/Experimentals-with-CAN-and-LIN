@@ -60,4 +60,8 @@ void freeRtosInit(void)
 #ifdef CAN
 	bxCAN_freeRtosInit();
 #endif
+
+#ifdef EEPROM
+	prj_eeprom_freertos_init();
+#endif
 }
