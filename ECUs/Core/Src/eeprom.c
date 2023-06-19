@@ -23,7 +23,7 @@
          the configuration of gpio, dma and global interrupts. */
 
 #if defined(STM32F429xx)
-	#define PRJ_EEPROM_MSG_SIZE										(PRJ_24LC256_MAX_MSG_SIZE)
+	#define PRJ_EEPROM_MSG_SIZE										(PRJ_24LC256_MSG_SIZE)
 
 	#define PRJ_EEPROM_I2C_USE										(PRJ_24LC256_I2C_USED)
 	#define PRJ_EEPROM_I2C_CLOCK_SPEED								(PRJ_24LC256_I2C_CLOCK_SPEED)
@@ -74,9 +74,8 @@ static prj_dma_handler_t m_dma_rx = {0};
 //---------------------------------------------------------------------------
 // Variables
 //---------------------------------------------------------------------------
-//static uint8_t data_write[] = "Hello, my eeprom!";
-static uint8_t data_write[130] = {0};
-//static uint8_t data_read[5];
+static uint8_t data_write[] = "Hello, my eeprom, again. How are you? Tell me something about you! Test message! 123456789()";
+static uint8_t data_read[PRJ_EEPROM_MSG_SIZE] = {0};
 
 //---------------------------------------------------------------------------
 // Static functions declaration
@@ -157,20 +156,15 @@ static void eeprom_read_write_memory_task(void const *p_argument)
 	/* Initialize auxiliary peripherals */
 	eeprom_init_auxiliary_peripherals();
 
-//	status = prj_eeprom_24lc256_erase_memory(PRJ_EEPROM_I2C_DEVICE_ADDRESS);
-
 	/* Initialize eeprom and its system buffers */
 	status = prj_eeprom_24lc256_init(PRJ_EEPROM_I2C_DEVICE_ADDRESS);
 
-	memset(data_write, 0x55, 130U);
-	data_write[129] = 0x77U;
-	status = prj_eeprom_24lc256_write_dynamic(PRJ_EEPROM_I2C_DEVICE_ADDRESS, data_write, sizeof(data_write));
 	macro_prj_common_unused(status);
 
 	/* Infinite loop */
 	for(;;)
 	{
-		osDelay(10000);
+		osDelay(1000);
 	}
 }
 
